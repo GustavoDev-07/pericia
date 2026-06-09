@@ -3,54 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/fale_conosco.css">
-    <script src="../js/fale_conosco.js"></script>
-    
-    <title>Pericia Fiducia</title>
+    <title>Fale Conosco – Perícia Fiducia</title>
 </head>
-<body class="escuro">
-    <header>
-        
+<body>
+ 
+    <!-- ── HEADER / NAV ─────────────────────────────────── -->
+    <header class="site-header">
+        <div class="header-inner">
+            <!-- Brand -->
+            <div class="brand">
+                <img src="../ico/logo.png" alt="Logo Perícia Fiducia" class="logo">
+                <div class="brand-text">
+                    <span class="brand-name">Perícia Fiducia</span>
+                    <span class="brand-sub">Digital Forensics</span>
+                </div>
+            </div>
+ 
+            <!-- Nav links -->
+            <nav class="main-nav">
+                <a href="#" class="nav-link" id="inicio">Início</a>
+                <a href="#" class="nav-link" id="servicos">Serviços</a>
+                <a href="#" class="nav-link" id="sobre_nos">Sobre Nós</a>
+                <a href="#" class="nav-link nav-link--active" id="contato">Contato</a>
+                <a href="#" class="nav-link" id="planos">Planos</a>
+                <a href="#" class="nav-link" id="feedback">Feedback</a>
+                <a href="http://127.0.0.1:5500/frontend/html/login.html" class="nav-btn-login" id="login" >Login</a>
+            </nav>
+        </div>
     </header>
-    <nav>
-        <p>Pericia Fiducia</p>
-        <p>DIGITAL FORENSICS</p>
-        <button class="inicio" id="inicio">Inicio</button>
-        <button class="servicos" id="servicos">Serviços</button>
-        <button class="contato" id="contato">Contato</button>
-        <button class="feedback" id="feedback">Feedback</button>
-        <button class="pedidos" id="pedidos">Pedidos</button>
-        <button class="sobre_nos" id="sobre_nos">Sobre Nós</button>
-        <button class="login" id="login">Login</button>
-    </nav>
-
-    <main>
-        <h1>Sinta-se á vontade para nos contatar</h1>
-        Nome:
-        <br>
-        <input type="text" placeholder="Nome completo">
-        <br><br>
-        Email:
-        <br><br>
-        <input type="text" placeholder="Email">
-        <br><br>
-        Digite o seu problema:
-        <br>
-        <input type="text" placeholder="Mensagem">
-        <br>
-        <button class="fale_conosco" id="fale_conosco">Enviar</button>
-        <br><br>
-        <p>Se você estiver com duvida ou problemas com os nossos serviços fique a vontade para entrar em contato conosco que nos que retornaremos o mais rápido possivel</p>
-        <br><br>
-        <img src="../ico/email.ico" alt="email">
-        <img src="../ico/localizacao.ico" alt="localizacao">
-        <img src="../ico/site.ico" alt="site">
-        <img src="../ico/telefone.ico" alt="telefone">
-
+ 
+    <!-- ── MAIN ─────────────────────────────────────────── -->
+    <main class="page-main">
+ 
+        <!-- Hero título -->
+        <section class="hero-section">
+            <h1 class="hero-title">Fale Conosco.</h1>
+        </section>
+ 
+        <!-- Conteúdo: formulário + info -->
+        <section class="contact-section">
+ 
+            <!-- Formulário -->
+            <div class="form-wrapper">
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="nome_completo">Nome Completo</label>
+                        <input type="text" id="nome_completo" placeholder="nome completo">
+                    </div>
+                </div>
+ 
+                <div class="field-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="seu@email.com">
+                </div>
+ 
+                <div class="field-group">
+                    <label for="mensagem">Mensagem</label>
+                    <textarea id="mensagem" rows="5" placeholder="Descreva sua dúvida ou problema..."></textarea>
+                </div>
+ 
+                <button class="btn-enviar" id="fale_conosco">Enviar</button>
+            </div>
+ 
+            <!-- Informações de contato -->
+            <div class="contact-info">
+                <h2 class="info-title">Nos consulte</h2>
+                <p class="info-desc">
+                    Se você tiver alguma dúvida sobre nossos serviços, precisar de ajuda ou quiser compartilhar
+                    sua opinião, nossa equipe dedicada está aqui para ajudá-lo em todas as etapas do processo.
+                </p>
+ 
+                <div class="contact-grid">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="../ico/email.ico" alt="Email">
+                        </div>
+                        <div class="contact-detail">
+                            <strong>Email</strong>
+                            <span>contato@fiducia.com.br</span>
+                        </div>
+                    </div>
+ 
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="../ico/site.ico" alt="Site">
+                        </div>
+                        <div class="contact-detail">
+                            <strong>Nosso site</strong>
+                            <span>www.fiducia.com.br</span>
+                        </div>
+                    </div>
+ 
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="../ico/telefone.ico" alt="Telefone">
+                        </div>
+                        <div class="contact-detail">
+                            <strong>Telefone</strong>
+                            <span>+55 (31) 9 9999-0000</span>
+                        </div>
+                    </div>
+ 
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="../ico/localizacao.ico" alt="Localização">
+                        </div>
+                        <div class="contact-detail">
+                            <strong>Localização</strong>
+                            <span>Minas Gerais, Brasil</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+ 
+        </section>
     </main>
-    
-    <footer>
-
+ 
+    <!-- ── FOOTER ────────────────────────────────────────── -->
+    <footer class="site-footer">
+        <p>&copy; 2025 Perícia Fiducia – Digital Forensics. Todos os direitos reservados.</p>
     </footer>
+ 
+    <script src="../js/fale_conosco.js"></script>
 </body>
 </html>
+ 
