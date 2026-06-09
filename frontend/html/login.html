@@ -4,29 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/login.css">
-    <script src="../js/login.js"></script>
-    
-    <title>Pericia Fiducia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Perícia Fiducia – Login</title>
 </head>
 <body>
-    <header>
-        Email:
-        <br>
-        <input type="text" placeholder="Digite seu Email">
-        <br>
-        Senha:
-        <br>
-        <input type="text" placeholder="Digite sua senha">
-        <br>
-        <br<h4>Ainda não possui uma conta?</h4><a href="">Realize o cadastro</a>
-    </header>
-
-    <main>
-
-    </main>
-    
-    <footer>
-
-    </footer>
+ 
+    <div class="container">
+ 
+        <!-- LADO ESQUERDO -->
+        <div class="left-panel">
+            <div class="brand">
+                <img src="../ico/logo.png" alt="Logo Perícia Fiducia" class="logo">
+                <div class="brand-text">
+                    <span class="brand-name">Perícia Fiducia</span>
+                    <span class="brand-sub">Digital Forensics</span>
+                </div>
+            </div>
+ 
+            <div class="left-content">
+                <h1 class="tagline">JUNTE‑SE A NÓS E<br>TRANSFORME SUA<br>JORNADA<br>DIGITAL!</h1>
+                <p class="tagline-sub">Crie sua conta de forma rápida e eficiente!</p>
+            </div>
+        </div>
+ 
+        <!-- LADO DIREITO -->
+        <div class="right-panel">
+            <div class="form-card">
+                <h2 class="form-title">LOGIN</h2>
+ 
+                <div class="field-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Digite seu e‑mail">
+                </div>
+ 
+                <div class="field-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha">
+                </div>
+ 
+                <div class="form-options">
+                    <a href="#" class="link-muted">Esqueceu a senha ?</a>
+                    <label class="remember">
+                        <input type="checkbox"> Lembrar‑me
+                    </label>
+                </div>
+ 
+                <button class="btn-login">LOGIN</button>
+ 
+                <p class="signup-text">
+                    Já possui uma conta? <a href="http://127.0.0.1:5500/frontend/html/cadastro.html" class="link-cadastro">Realize o cadastro</a>
+                </p>
+            </div>
+        </div>
+ 
+    </div>
+ 
+    <script src="login.js"></script>
 </body>
 </html>
