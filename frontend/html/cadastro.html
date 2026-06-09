@@ -3,48 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <link rel="stylesheet" href="../css/cadastro.css">
-    <script src="../js/cadastro.js"></script>
-
-    <title>Pericia Fiducia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <title>Perícia Fiducia – Cadastro</title>
 </head>
 <body>
-    <header>
-    Nome Completo:
-    <br> 
-    <input type="text" placeholder="Digite seu nome">
-    <br>
-    Email:
-    <br> 
-    <input type="text" placeholder="Digite seu Email">
-    <br>
-    Data de nascimento:
-    <br> 
-    <input type="date">
-    <br>
-    CPF/CNPJ:
-    <br> 
-    <input type="number" placeholder="Digite seu CPF/CNPJ">
-    <br>
-    Senha:
-    <br> 
-    <input type="password" placeholder="Digite sua senha">
-    <br>
-    Confirmar senha:
-    <br> 
-    <input type="password" placeholder="Confirme sua senha">
-    <br>
-    <button class="registrar" id="registrar">Registrar</button>
-    <br>
-    <br<h4>Ja possui uma conta?</h4><a href="">Realize o login</a>
-    </header>
+ 
+    <div class="container">
+ 
+        <!-- LADO ESQUERDO (igual login) -->
+        <div class="left-panel">
+            <div class="brand">
+                <img src="../ico/logo.png" alt="Logo Perícia Fiducia" class="logo">
+                <div class="brand-text">
+                    <span class="brand-name">Perícia Fiducia</span>
+                    <span class="brand-sub">Digital Forensics</span>
+                </div>
+            </div>
+ 
+            <div class="left-content">
+                <h1 class="tagline">CRIE SUA CONTA E<br>COMECE SUA<br>JORNADA<br>DIGITAL!</h1>
+                <p class="tagline-sub">Cadastro rápido, simples e seguro.</p>
+            </div>
+        </div>
+ 
+        <!-- LADO DIREITO -->
+        <div class="right-panel">
+            <div class="form-card">
+                <h2 class="form-title">CADASTRO</h2>
+ 
+                <div class="field-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" placeholder="Digite seu nome">
+                </div>
+ 
+                <div class="field-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Digite seu e-mail">
+                </div>
 
-    <main>
+                <div class="field-group">
+                    <label for="data">Data de nascimento</label>
+                    <input type="date" id="data">
+                </div>
 
-    </main>
-    
-    <footer>
+                <div class="field-group">
+                    <label for="cpf">CPF/CNPJ</label>
+                    <input type="text" id="cpf" placeholder="Digite seu CPF ou CNPJ">
+                </div>
+ 
+                <div class="field-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha">
+                </div>
 
-    </footer>
+                <div class="field-group">
+                    <label for="confirmar">Confirmar senha</label>
+                    <input type="password" id="confirmar" placeholder="Confirme sua senha">
+                </div>
+ 
+                <button class="btn-login" id="registrar">REGISTRAR</button>
+ 
+                <p class="signup-text">
+                    Já possui uma conta? 
+                    <a href="http://127.0.0.1:5500/frontend/html/login.html" class="link-cadastro">Realize o login</a>
+                </p>
+            </div>
+        </div>
+ 
+    </div>
+ 
+    <script src="../js/cadastro.js"></script>
 </body>
 </html>
