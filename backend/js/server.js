@@ -21,6 +21,10 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ mensagem: 'Login ou senha inválidos!' })
 });
 
+app.get('/cadastro', async(req, res) => {
+    res.sendFile(path.join(__dirname, 'cadastro.html'))
+});
+
 app.post('/cadastro', async (req, res) => {
     // const{nome, email, data_nascimento, cpf_cnpj, senha, confirmacao_senha} = req.body;
 
