@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
-import executarQuery from './db';
+import executarQuery from './db.js';
 
 const app = express();
 
@@ -122,5 +122,5 @@ app.post('/feedback:id', async (req, res) => {
 })
 
 app.listen(3000, () => {
-    console.log("Servidor online em : http://localhost:3000")
+    console.log("Servidor online em: http://localhost:3000")
 })
