@@ -3,71 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/pericia.css">
-    <script src="../js/pericia.js"></script>
-    <title>Pericia Fiducia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/inicio.css">
+    <title>Perícia Fiducia – Digital Forensics</title>
 </head>
 <body class="escuro">
-    <header>
-        <button onclick="alterar_tema()">Tema</button>
-    </header>
-    <nav>
-        <p>Pericia Fiducia</p>
-        <p>DIGITAL FORENSICS</p>
-        <button class="inicio" id="inicio">Inicio</button>
-        <button class="servicos" id="servicos">Serviços</button>
-        <button class="contato" id="contato">Contato</button>
-        <button class="pedidos" id="pedidos">Pedidos</button>
-        <button class="feedback" id="feedback">Feedback</button>
-        <button class="sobre_nos" id="sobre_nos">Sobre Nós</button>
-        <button class="login" id="login">Login</button>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="17" stroke="#00c6c6" stroke-width="2"/>
+                    <path d="M11 18c0-3.87 3.13-7 7-7s7 3.13 7 7" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="18" cy="18" r="3" fill="#00c6c6"/>
+                    <path d="M18 11v-3M18 28v-3M11 18H8M28 18h-3" stroke="#00c6c6" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="nav-title">
+                <span class="brand-name">Perícia Fiducia</span>
+                <span class="brand-sub">DIGITAL FORENSICS</span>
+            </div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#inicio" class="nav-link active">Início</a></li>
+            <li><a href="#servicos" class="nav-link">Serviços</a></li>
+            <li><a href="#sobre" class="nav-link">Sobre Nós</a></li>
+            <li><a href="#contato" class="nav-link">Contato</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn-tema" onclick="alterar_tema()" title="Alternar tema">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
+            <button class="btn-login" onclick="location.href='login.html'">Login</button>
+        </div>
     </nav>
 
     <main>
-        <h1>Serviços</h1>
-        Oferecemos soluções completas em recuperação forencee pericia digital.
-        <br>
-        Nossa equipe de especialistas utiliza tecnologia de ponta para garantir a integridade e autencidade dad evidências digitais em processos judicias e investigações corporativas.
-        <br><br>
-        <strong>Recuperação de Dados:</strong>
-        <br>
-        Recuperamos dados perdidos, corrompidos ou deletados de dispositivos de armazenamento, mantendo a cadeia de custódia para uso judicial.
-        <br><br>
-        <strong>Análise Forense Digital:</strong>
-        <br>
-        Investigação técnica detalhada de dispositivos eletrônicos para coleta de evidências digitais em casos criminais e corporativos.
-        <br><br>
-        <strong>Perícia Judicial e Consultoria:</strong>
-        <br>
-        Elaboração de laudos técnicos para processos judiciais e consultoria especializada em segurança da informação.
-        <br><br>
-        <h1>Sobre Nós</h1>
-        <strong>Nossa Visão</strong>
-        <br>
-        Ser referência nacional em perícia digital, oferecendo soluções tecnológicas que contribuam para a justiça e segurança da informação com máxima precisão.
-        <br>
-        <strong>Nossa Missão</strong>
-        <br>
-        Fornecer serviços de recuperação forense e análise digital com metodologia científica, auxiliando investigações e processos judiciais com provas técnicas confiáveis.
-        <br>
-        <strong>Nossos Valores</strong>
-        <br>
-        Ética, integridade, confidencialidade, precisão técnica e compromisso com a verdade são os pilares que guiam todas as nossas atividades e relacionamentos.
-        <br>
-        <strong>Excelência</strong>
-        <br>
-        Buscamos constantemente aprimorar nossas técnicas e ferramentas, garantindo resultados de alta qualidade que atendam aos mais rigorosos padrões forenses.
-        <br><br>
-        <h1>Por Que Nos Escolher</h1>
-        Nossa equipe é composta por peritos certificados com anos de experiência em investigação digital, análise forense e recuperação de dados em casos complexos.
-        <br><br>
-        Utilizamos ferramentas e metodologias de ponta para garantir análises precisas, recuperação eficiente de dados e evidências digitais admissíveis em processos judiciais.
-        <br><br>
-        Garantimos total sigilo e proteção das informações. Todos os processos seguem protocolos rígidos de segurança e cadeia de custódia certificada.
+
+        <!-- SEÇÃO SERVIÇOS -->
+        <section class="secao secao-servicos" id="servicos">
+            <div class="secao-bg secao-bg-gradient-1"></div>
+            <div class="container">
+                <h2 class="secao-titulo">Serviços</h2>
+                <p class="secao-desc">
+                    Oferecemos soluções completas em recuperação forense e perícia digital.
+                    Nossa equipe de especialistas utiliza tecnologia de ponta para garantir a
+                    integridade e autenticidade das evidências digitais em processos judiciais
+                    e investigações corporativas.
+                </p>
+                <div class="cards-grid cards-3">
+                    <div class="card-servico">
+                        <div class="card-img-wrap">
+                            <div class="card-img-placeholder icon-wifi">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="#00c6c6"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3>Recuperação de Dados</h3>
+                            <p>Recuperamos dados perdidos, corrompidos ou deletados de dispositivos de armazenamento, mantendo a cadeia de custódia para uso judicial.</p>
+                        </div>
+                    </div>
+                    <div class="card-servico destaque">
+                        <div class="card-img-wrap">
+                            <div class="card-img-placeholder icon-lock">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="#00c6c6"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3>Análise Forense Digital</h3>
+                            <p>Investigação técnica detalhada de dispositivos eletrônicos para coleta de evidências digitais em casos criminais e corporativos.</p>
+                        </div>
+                    </div>
+                    <div class="card-servico">
+                        <div class="card-img-wrap">
+                            <div class="card-img-placeholder icon-globe">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3>Perícia Judicial e Consultoria</h3>
+                            <p>Elaboração de laudos técnicos para processos judiciais e consultoria especializada em segurança da informação.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO SOBRE NÓS -->
+        <section class="secao secao-sobre" id="sobre">
+            <div class="secao-bg secao-bg-gradient-2"></div>
+            <div class="container">
+                <h2 class="secao-titulo">sobre <span class="titulo-destaque">nós</span></h2>
+                <p class="secao-desc">
+                    Somos especialistas em recuperação forense e perícia digital, atuando com
+                    excelência na análise de evidências eletrônicas. Nossa equipe é composta por
+                    peritos certificados, comprometidos com a verdade e a justiça através da tecnologia.
+                </p>
+                <div class="cards-grid cards-4">
+                    <div class="card-sobre">
+                        <div class="card-sobre-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><path d="M2 20h20M4 20V10l8-6 8 6v10"/><path d="M9 20v-5h6v5"/></svg>
+                        </div>
+                        <h4>Nossa Visão</h4>
+                        <p>Ser referência nacional em perícia digital, oferecendo soluções tecnológicas que contribuam para a justiça e segurança da informação com máxima precisão.</p>
+                    </div>
+                    <div class="card-sobre">
+                        <div class="card-sobre-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        </div>
+                        <h4>Nossa Missão</h4>
+                        <p>Fornecer serviços de recuperação forense e análise digital com metodologia científica, auxiliando investigações e processos judiciais com provas técnicas confiáveis.</p>
+                    </div>
+                    <div class="card-sobre">
+                        <div class="card-sobre-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8"/><path d="M9 17l3-3 3 3M9 11l3 3 3-3"/></svg>
+                        </div>
+                        <h4>Nossos Valores</h4>
+                        <p>Ética, integridade, confidencialidade, precisão técnica e compromisso com a verdade são os pilares que guiam todas as nossas atividades e relacionamentos.</p>
+                    </div>
+                    <div class="card-sobre">
+                        <div class="card-sobre-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1.5"><path d="M12 2l3 6.5 7 1-5 4.9 1.2 7L12 18l-6.2 3.4L7 14.4 2 9.5l7-1L12 2z"/></svg>
+                        </div>
+                        <h4>Excelência</h4>
+                        <p>Buscamos constantemente aprimorar nossas técnicas e ferramentas, garantindo resultados de alta qualidade que atendam aos mais rigorosos padrões forenses.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO POR QUE NOS ESCOLHER -->
+        <section class="secao secao-escolher" id="inicio">
+            <div class="secao-bg secao-bg-gradient-3"></div>
+            <div class="container">
+                <h2 class="secao-titulo">Por que <span class="titulo-destaque">nos escolher</span></h2>
+                <div class="cards-grid cards-3">
+                    <div class="card-escolher">
+                        <div class="card-escolher-img">
+                            <div class="img-placeholder img-team">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><circle cx="19" cy="7" r="2"/><path d="M22 21v-1a2 2 0 0 0-2-2h-1"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>Nossa equipe é composta por peritos certificados com anos de experiência em investigação digital, análise forense e recuperação de dados em casos complexos.</p>
+                        </div>
+                    </div>
+                    <div class="card-escolher">
+                        <div class="card-escolher-img">
+                            <div class="img-placeholder img-tech">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l3 3-3 3M13 14h4"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>Utilizamos ferramentas e metodologias de ponta para garantir análises precisas, recuperação eficiente de dados e evidências digitais admissíveis em processos judiciais.</p>
+                        </div>
+                    </div>
+                    <div class="card-escolher">
+                        <div class="card-escolher-img">
+                            <div class="img-placeholder img-security">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00c6c6" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>Garantimos total sigilo e proteção das informações. Todos os processos seguem protocolos rígidos de segurança e cadeia de custódia certificada.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO RECUPERAÇÃO DE DISPOSITIVOS -->
+        <section class="secao secao-recuperacao" id="contato">
+            <div class="container">
+                <div class="recuperacao-grid">
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>RECUPERAR<br><span>PEN DRIVE</span></h4>
+                            <p>Consiga de volta as informações do seu Pen Drive através da recuperação de dados</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>RECUPERAR<br><span>SSD</span></h4>
+                            <p>Recupere dados e informações que foram sequestrados</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>RECUPERAR<br><span>HD EXTERNO</span></h4>
+                            <p>Recupere o acesso aos dados que você perdeu quando seu HD foi danificado.</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>RECUPERAR<br><span>VM</span></h4>
+                            <p>Recupere dados de máquinas virtuais inacessíveis, apagadas e até mesmo corrompidas.</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>CARTÃO DE<br><span>MEMÓRIA</span></h4>
+                            <p>Independente do tamanho do seu dispositivo, somos capazes de trazer suas informações de volta</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                    <div class="card-recuperacao">
+                        <div class="card-rec-borda"></div>
+                        <div class="card-rec-body">
+                            <h4>RECUPERAR<br><span>HD</span></h4>
+                            <p>Inicie agora a recuperação dos dados do seu Desktop.</p>
+                            <button class="btn-entendo">→ Entendo melhor</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <footer>
-
+    <footer class="rodape">
+        <div class="container rodape-inner">
+            <div class="rodape-brand">
+                <span class="brand-name">Perícia Fiducia</span>
+                <span class="brand-sub">DIGITAL FORENSICS</span>
+            </div>
+            <p class="rodape-copy">© 2025 Perícia Fiducia. Todos os direitos reservados.</p>
+        </div>
     </footer>
+
+    <script src="../js/inicio.js"></script>
 </body>
 </html>
