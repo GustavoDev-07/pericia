@@ -6,7 +6,7 @@ CREATE TABLE clientes(
     nome VARCHAR(250) NOT NULL,
     email VARCHAR (100),
     cpfCnpj  VARCHAR(14) NOT NULL UNIQUE,
-    dataNascimento VARCHAR(8),
+    dataNascimento VARCHAR(10),
     senha VARCHAR(12)
 
 );
