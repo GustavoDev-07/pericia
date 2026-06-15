@@ -8,17 +8,68 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 
+// app.post('/login', async (req, res) => {
+//     const { email, senha } = req.body;
+
+//     if (email === 'teste' && senha === '123456') {
+
+//         const token = jwt.sign({ id: 1, email }, 'SEGREDO_SUPER_SECRETO', { expiresIn: '1h' })
+
+//         return res.json({ auth: true, token });
+//     }
+
+//     return res.status(401).json({ mensagem: 'Login ou senha inválidos!' })
+// });
+
 app.post('/login', async (req, res) => {
     const { email, senha } = req.body;
 
-    if (email === 'teste' && senha === '123456') {
-
-        const token = jwt.sign({ id: 1, email }, 'SEGREDO_SUPER_SECRETO', { expiresIn: '1h' })
-
-        return res.json({ auth: true, token });
+    // 1. Validação básica de campos vazios
+    if (!email || !senha) {
+        return res.status(400).json({ mensagem: 'E-mail e senha são obrigatórios!' });
     }
 
-    return res.status(401).json({ mensagem: 'Login ou senha inválidos!' })
+    // 2. Query para buscar o usuário pelo e-mail
+    const query = 'SELECT id, nome, email, senha FROM usuarios WHERE email = ?';
+
+    try {
+        const resultado = await executarQuery(query, [email]);
+
+        // Dependendo do mysql2, o resultado pode vir direto ou dentro de uma array
+        const usuarios = resultado.insertId === undefined ? resultado : resultado[0];
+
+        // 3. Verifica se o usuário foi encontrado
+        if (!usuarios || usuarios.length === 0) {
+            return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
+        }
+
+        const usuarioEncontrado = usuarios[0];
+
+        // 4. Verifica se a senha bate
+        // NOTA: Se você salvou a senha criptografada no cadastro, precisará usar o bcrypt aqui.
+        // Se salvou em texto limpo (apenas para testes), a comparação direta funciona:
+        if (usuarioEncontrado.senha !== senha) {
+            return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
+        }
+
+        // 5. Se tudo estiver certo, gera o Token JWT com os dados reais do banco
+        const token = jwt.sign(
+            { id: usuarioEncontrado.id, email: usuarioEncontrado.email }, 
+            'SEGREDO_SUPER_SECRETO', 
+            { expiresIn: '1h' }
+        );
+
+        // Retorna sucesso para o Frontend
+        return res.json({ 
+            auth: true, 
+            token, 
+            usuario: { nome: usuarioEncontrado.nome, email: usuarioEncontrado.email } 
+        });
+
+    } catch (erro) {
+        console.error('Erro ao verificar login no banco:', erro);
+        return res.status(500).json({ mensagem: 'Erro interno no servidor ao tentar logar.' });
+    }
 });
 
 // app.get('/cadastro', async(req, res) => {
