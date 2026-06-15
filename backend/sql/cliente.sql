@@ -1,6 +1,6 @@
 USE pericia;
 DROP TABLE IF EXISTS clientes;
-CREATE TABLE clientes(
+CREATE TABLE usuarios(
 
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(250) NOT NULL,
