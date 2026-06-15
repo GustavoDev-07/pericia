@@ -14,8 +14,8 @@ CREATE TABLE usuarios(
 SELECT
     nome,
     email,
-    cpf_cnpj,
-    data_nascimento,
+    cpfCnpj,
+    dataNascimento,
     senha
 FROM
     clientes;
