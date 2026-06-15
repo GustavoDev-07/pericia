@@ -31,7 +31,7 @@
  
         <!-- LADO DIREITO -->
         <div class="right-panel">
-            <div class="form-card">
+            <div class="form-card" onsubmit="cadastro_usuario(event)">
                 <h2 class="form-title">CADASTRO</h2>
  
                 <div class="field-group">
@@ -64,7 +64,7 @@
                     <input type="password" id="confirmar" placeholder="Confirme sua senha">
                 </div>
  
-                <button class="btn-login" id="registrar">REGISTRAR</button>
+                <button type="submit" class="btn-login" id="registrar">REGISTRAR</button>
  
                 <p class="signup-text">
                     Já possui uma conta? 
