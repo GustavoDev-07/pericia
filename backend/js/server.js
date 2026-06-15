@@ -21,9 +21,9 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ mensagem: 'Login ou senha inválidos!' })
 });
 
-app.get('/cadastro', async(req, res) => {
-    res.sendFile(path.join(__dirname, 'cadastro.html'))
-});
+// app.get('/cadastro', async(req, res) => {
+//     res.sendFile(path.join(__dirname, 'cadastro.html'))
+// });
 
 app.post('/cadastro', async (req, res) => {
     // const{nome, email, data_nascimento, cpf_cnpj, senha, confirmacao_senha} = req.body;
@@ -47,30 +47,33 @@ app.post('/cadastro', async (req, res) => {
     var usuario = [
         req.body.nome,
         req.body.email,
-        req.body.data_nascimento,
-        req.body.cpf_cnpj,
+        req.body.dataNascimento,
+        req.body.cpfCnpj,
         req.body.senha
     ];
 
     let resultado = await executarQuery(query, usuario);
 
     try {
+        let resultado = await executarQuery(query, usuario);
         res.send({
-            insertId: resultado[0].insertId
+            insertId: resultado.insertId || (resultado[0] && resultado[0].insertId)
         })
     }
-    catch {
-        res.send({
-            insertId: null
-        })
+    catch (erro) {
+        console.error("Erro ao cadastrar:", erro);
+        res.status(500).send({
+            insertId: null,
+            mensagem: "Erro ao salvar no banco de dados."
+        });
     }
 })
 
-app.get('/meus-servicos:id', async (req, res) => {
+app.get('/meus-servicos/:id', async (req, res) => {
     const userId = req.params.id;
 
     try {
-        const [linhas] = await db.query(
+        const [linhas] = await executarQuery(
             'SELECT * FROM usuarios WHERE id = ?',
             [userId]
         );
@@ -88,7 +91,7 @@ app.get('/meus-servicos:id', async (req, res) => {
 
 })
 
-app.post('/feedback:id', async (req, res) => {
+app.post('/feedback/:id', async (req, res) => {
 
     var query = `
     INSERT INTO feedback(
