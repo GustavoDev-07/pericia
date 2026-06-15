@@ -51,3 +51,7 @@ try {
         alert("Não foi possível conectar ao servidor. Certifique-se de que o backend está rodando na porta 3000.");
     }
 };
+
+async function login_usuario(params) {
+    
+}
