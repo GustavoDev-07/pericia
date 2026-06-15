@@ -32,8 +32,8 @@ app.post('/cadastro', async (req, res) => {
         INSERT INTO usuarios(
             nome,
             email,
-            data_nascimento,
-            cpf_cnpj,
+            dataNascimento,
+            cpfCnpj,
             senha
         )VALUES (
             ?,
