@@ -28,6 +28,7 @@ html, body {
     height: 100%;
     font-family: 'Nunito', sans-serif;
     background: var(--clr-panel);
+    overflow: hidden; /* Impede a rolagem na tela inteira */
 }
  
 /* ── Layout principal ─────────────────────── */
@@ -55,7 +56,27 @@ html, body {
     position: relative;
     overflow: hidden;
 }
- 
+ .btn-voltar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+.btn-voltar img {
+    width: 28px;   /* diminui o tamanho */
+    height: 28px;
+    object-fit: contain;
+    cursor: pointer;
+    background: none; /* remove fundo */
+    border: none;
+    transition: transform 0.2s;
+}
+
+.btn-voltar img:hover {
+    transform: scale(1.1);
+}
 /* Textura sutil */
 .left-panel::before {
     content: '';
@@ -144,7 +165,7 @@ html, body {
     background: var(--clr-white);
     border-radius: 18px;
     box-shadow: var(--shadow);
-    padding: 40px 42px 35px;
+    padding: 20px 42px; /* Reduzido o padding vertical de 40px/45px para 20px */
     width: 100%;
     max-width: 400px;
 }
@@ -156,12 +177,12 @@ html, body {
     color: #1a1a1a;
     text-align: center;
     letter-spacing: 2px;
-    margin-bottom: 32px;
+    margin-bottom: 15px; /* Reduzido de 32px para 15px */
 }
  
 /* Campos */
 .field-group {
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Reduzido de 10px para 8px */
 }
  
 .field-group label {
@@ -169,12 +190,12 @@ html, body {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--clr-label);
-    margin-bottom: 6px;
+    margin-bottom: 3px; /* Reduzido de 6px para 3px */
 }
- 
+
 .field-group input {
     width: 100%;
-    padding: 11px 14px;
+    padding: 8px 12px; /* Reduzido de 11px/14px para 8px/12px */
     border: 1.5px solid var(--clr-border);
     border-radius: var(--radius);
     background: var(--clr-input-bg);
@@ -230,7 +251,7 @@ html, body {
 /* Botão de login */
 .btn-login {
     width: 100%;
-    padding: 13px;
+    padding: 11px; /* Reduzido levemente de 13px para 11px */
     background: linear-gradient(90deg, #1a1a2e 0%, #2c3e6b 40%, #c0392b 100%);
     color: #fff;
     font-family: 'Rajdhani', sans-serif;
@@ -241,7 +262,8 @@ html, body {
     border-radius: var(--radius);
     cursor: pointer;
     transition: opacity 0.2s, transform 0.15s;
-    margin-bottom: 28px;
+    margin-bottom: 15px; /* Reduzido de 28px para 15px */
+    margin-top: 5px;
 }
  
 .btn-login:hover {
