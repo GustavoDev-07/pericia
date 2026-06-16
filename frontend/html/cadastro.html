@@ -6,9 +6,10 @@
     
     <link rel="stylesheet" href="../css/cadastro.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="../js/pericia.js"></script>
     
     <title>Perícia Fiducia – Cadastro</title>
-</head>
+</head> 
 <body>
  
     <div class="container">
@@ -16,6 +17,9 @@
         <!-- LADO ESQUERDO (igual login) -->
         <div class="left-panel">
             <div class="brand">
+                <a href="../html/inicio.html" class="btn-voltar">
+        <img src="../ico/botao-voltar.png" alt="Voltar">
+    </a>
                 <img src="../ico/logo.png" alt="Logo Perícia Fiducia" class="logo">
                 <div class="brand-text">
                     <span class="brand-name">Perícia Fiducia</span>
@@ -31,7 +35,7 @@
  
         <!-- LADO DIREITO -->
         <div class="right-panel">
-            <div class="form-card" onsubmit="cadastro_usuario(event)">
+            <form class="form_card" onsubmit="cadastro_usuario(event)">
                 <h2 class="form-title">CADASTRO</h2>
  
                 <div class="field-group">
@@ -70,7 +74,7 @@
                     Já possui uma conta? 
                     <a href="http://127.0.0.1:5500/frontend/html/login.html" class="link-cadastro">Realize o login</a>
                 </p>
-            </div>
+            </form>
         </div>
  
     </div>

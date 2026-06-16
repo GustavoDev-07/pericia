@@ -64,7 +64,27 @@ html, body {
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     pointer-events: none;
 }
- 
+.btn-voltar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    text-decoration: none; 
+}
+
+.btn-voltar img {
+    width: 28px;   /* diminui o tamanho */
+    height: 28px;
+    object-fit: contain;
+    cursor: pointer;
+    background: none; /* remove fundo */
+    border: none;
+    transition: transform 0.2s;
+}
+
+.btn-voltar img:hover {
+    transform: scale(1.1);
+}
 /* Brand (logo + nome) */
 .brand {
     display: flex;

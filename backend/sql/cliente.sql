@@ -1,12 +1,12 @@
 USE pericia;
 DROP TABLE IF EXISTS clientes;
-CREATE TABLE clientes(
+CREATE TABLE usuarios(
 
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(250) NOT NULL,
     email VARCHAR (100),
-    cpf_cnpj  VARCHAR(14) NOT NULL UNIQUE,
-    data_nascimento VARCHAR(8),
+    cpfCnpj  VARCHAR(14) NOT NULL UNIQUE,
+    dataNascimento VARCHAR(10),
     senha VARCHAR(12)
 
 );
@@ -14,8 +14,8 @@ CREATE TABLE clientes(
 SELECT
     nome,
     email,
-    cpf_cnpj,
-    data_nascimento,
+    cpfCnpj,
+    dataNascimento,
     senha
 FROM
     clientes;

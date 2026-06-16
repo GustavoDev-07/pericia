@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise.js'
 
 async function conectar() {
-    const conexao = mysql.createConnection({
+    const conexao = await mysql.createConnection({
         host: '172.16.117.9',
         port: 3306,
         user: 'perito',
@@ -20,7 +20,7 @@ async function executarQuery(query, params=[]) {
         return resultado;
     }
     catch (erro){
-        console.log('Erro ao executar Query: ${erro}')
+        console.log(`Erro ao executar Query: ${erro}`)
     }
     finally{
         await conexao.end();
