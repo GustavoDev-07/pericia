@@ -18,7 +18,6 @@
   const btn = document.createElement('a');
   btn.href = '../html/inicio.html';
   btn.className = 'btn-voltar';
-  btn.textContent = '← Voltar ao Início';
   leftPanel.insertBefore(btn, leftPanel.firstChild);
 })();
 
