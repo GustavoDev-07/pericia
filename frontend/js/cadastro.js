@@ -1,7 +1,3 @@
-/* ============================================
-   cadastro.js – Perícia Fiducia
-   Validação + navegação do formulário de cadastro
-   ============================================ */
 
 // ── Injeta CSS de extras automaticamente ────
 (function injectCSS() {
