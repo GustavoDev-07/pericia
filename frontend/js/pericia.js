@@ -1,5 +1,3 @@
-
-
 async function cadastro_usuario(evento) {
     evento.preventDefault();
 
@@ -24,9 +22,8 @@ async function cadastro_usuario(evento) {
         confirmacaoSenha: confirmacaoSenha
     };
 
-    
-try {
-        // Realiza a chamada do método POST para o endpoint correto
+
+    try {
         const resposta = await fetch('http://127.0.0.1:3000/cadastro', {
             method: 'POST',
             headers: {
@@ -37,10 +34,8 @@ try {
 
         const resultado = await resposta.json();
 
-        // Tratamento da resposta baseado no try/catch do seu backend
-
         if (resposta.ok && resultado.insertId) {
-            alert("Usuário cadastrado com sucesso! ID: "+ resultado.insertId);
+            alert("Usuário cadastrado com sucesso! ID: " + resultado.insertId);
 
             document.getElementById("form_card").reset();
         } else {
@@ -53,27 +48,21 @@ try {
 };
 
 async function login_usuario(evento) {
-    // 1. Evita que a página recarregue ao submeter o formulário
-    evento.preventDefault();
 
-    // 2. Captura os valores dos inputs (certifique-se de que os IDs existam no seu HTML de login)
     const email = document.getElementById('email').value;
-    const senha = document.getElementById('senha').value;
+    const senha = document.getElementById('email').value;
 
-    // Validação básica no front-end para não enviar campos vazios
     if (!email || !senha) {
         alert("Por favor, preencha todos os campos.");
         return;
     }
 
-    // 3. Monta o objeto (payload) com os dados de login
     const payload = {
         email: email,
         senha: senha
     };
 
     try {
-        // 4. Faz a requisição POST para a rota de login do backend
         const resposta = await fetch('http://127.0.0.1:3000/login', {
             method: 'POST',
             headers: {
@@ -84,23 +73,15 @@ async function login_usuario(evento) {
 
         const resultado = await resposta.json();
 
-        // 5. Trata a resposta enviada pelo servidor
-        if (resposta.ok && resultado.auth === true) {
-            alert(`Bem-vindo de volta, ${resultado.usuario.nome}!`);
-
-            // 6. Armazena o Token JWT de forma segura no navegador do usuário
+        if (resposta.ok && resultado.token) {
+            alert("Login realizado com sucesso!");
             localStorage.setItem('token', resultado.token);
-
-            // Redireciona o usuário para a página principal ou painel de serviços
-            window.location.href = 'http://127.0.0.1:5500/frontend/html/inicio.html'; 
-
-        } else {
-            // Exibe a mensagem de erro vinda do backend ("E-mail ou senha incorretos!", etc)
-            alert(resultado.mensagem || "Falha ao realizar o login.");
+            window.location.href = "..html/inicio.html";
+        }else {
+            alert(resultado.mensagem || "Erro ao realizar login.");
         }
-
-    } catch (erro) {
-        console.error("Erro na comunicação com a API de login:", erro);
-        alert("Não foi possível conectar ao servidor. Certifique-se de que o backend está rodando na porta 3000.");
+    } catch(erro) {
+        console.error("Erro de comunicação com a API do login", erro);
+        alert("Não foi possível conectar com servidor.")
     }
 }
