@@ -47,10 +47,12 @@ async function cadastro_usuario(evento) {
     }
 };
 
-async function login_usuario(evento) {
+async function loginUsuario(event) {
 
     const email = document.getElementById('email').value;
-    const senha = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+
+    console.log(email, senha)
 
     if (!email || !senha) {
         alert("Por favor, preencha todos os campos.");
@@ -76,7 +78,7 @@ async function login_usuario(evento) {
         if (resposta.ok && resultado.token) {
             alert("Login realizado com sucesso!");
             localStorage.setItem('token', resultado.token);
-            window.location.href = "..html/inicio.html";
+            window.location.href = "../html/inicio.html";
         }else {
             alert(resultado.mensagem || "Erro ao realizar login.");
         }
