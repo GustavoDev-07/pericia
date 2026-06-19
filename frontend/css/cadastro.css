@@ -165,7 +165,7 @@ html, body {
     background: var(--clr-white);
     border-radius: 18px;
     box-shadow: var(--shadow);
-    padding: 20px 42px; /* Reduzido o padding vertical de 40px/45px para 20px */
+    padding: 48px 44px 40px;
     width: 100%;
     max-width: 400px;
 }
