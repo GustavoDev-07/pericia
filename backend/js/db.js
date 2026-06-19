@@ -2,10 +2,10 @@ import mysql from 'mysql2/promise.js'
 
 async function conectar() {
     const conexao = await mysql.createConnection({
-        host: '172.16.117.9',
+        host: '127.0.0.1',
         port: 3306,
-        user: 'perito',
-        password: '250407',
+        user: 'root',
+        password: '',
         database: 'pericia'
     });
     
