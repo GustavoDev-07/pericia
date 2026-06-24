@@ -190,3 +190,51 @@ window.addEventListener('load', setupMobileMenu);
 console.log('✓ Perícia Fiducia - Website carregado com sucesso!');
 console.log('✓ Tema: ' + (localStorage.getItem('tema') || 'escuro'));
 console.log('✓ Versão: 1.0.0');
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token')
+
+    if(token){
+        carregarDadosUsuario(token);
+    }else {
+        configurarModoVisitante();
+    };
+});
+
+async function carregarDadosUsuario(token) {
+    try {
+        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ${token}',
+                'Content-Type': 'application/json'
+            }
+        })
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            document.getElementById('area-usuario').innerHTML = `
+                <span>Olá, ${dados.nome}!</span>
+                <button onclick="deslogarUsuario()">Sair</button>
+            `;
+        } else{
+            console.warn("Token Inválido ou Expirado!");
+            localStorage.removeItem('token');
+            configurarModoVisitante();
+        }
+    }catch (error) {
+        console.error("Erro ao buscar dados do perfil:", error);
+        configurarModoVisitante();
+    }
+}
+
+function configurarModoVisitante() {
+    document.getElementById('area-usuario').innerHTML = `
+        <a href="login.html"><button>Login</button></a>
+    `;
+}
+
+function deslogarUsuario() {
+    localStorage.removeItem('token');
+    window.location.reload();
+}
