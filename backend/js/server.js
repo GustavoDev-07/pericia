@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { raw } from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
 import executarQuery from './db.js';
@@ -90,12 +90,15 @@ app.post('/cadastro', async (req, res) => {
         req.body.senha
     ];
 
-    let resultado = await executarQuery(query, usuario);
-
     try {
         let resultado = await executarQuery(query, usuario);
         res.send({
-            insertId: resultado.insertId || (resultado[0] && resultado[0].insertId)
+            insertId: resultado.insertId || (resultado[0] && resultado[0].insertId),
+            usuario: {
+                id: resultado.insertId,
+                nome: req.body.nome,
+                email: req.body.email
+            }
         })
     }
     catch (erro) {

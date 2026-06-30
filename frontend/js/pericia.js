@@ -1,5 +1,5 @@
-async function cadastro_usuario(evento) {
-    evento.preventDefault();
+async function cadastro_usuario(event) {
+    event.preventDefault();
 
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
@@ -35,8 +35,9 @@ async function cadastro_usuario(evento) {
         const resultado = await resposta.json();
 
         if (resposta.ok && resultado.insertId) {
+            localStorage.setItem('usuarioLogado', JSON.stringify(resultado.usuario))
             alert("Usuário cadastrado com sucesso! ID: " + resultado.insertId);
-
+            window.location.replace("http://127.0.0.1:5500/frontend/html/inicio.html");
             document.getElementById("form_card").reset();
         } else {
             alert(resultado.mensagem || "O servidor processou a requisição, mas falhou ao salvar no banco.")
@@ -46,6 +47,11 @@ async function cadastro_usuario(evento) {
         alert("Não foi possível conectar ao servidor. Certifique-se de que o backend está rodando na porta 3000.");
     }
 };
+
+window.addEventListener('DOMContentLoaded', () => {
+
+    document.getElementById('form_card').addEventListener('submit', cadastro_usuario);
+})
 
 async function loginUsuario(event) {
 
@@ -87,3 +93,4 @@ async function loginUsuario(event) {
         alert("Não foi possível conectar com servidor.")
     }
 }
+
