@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/inicio.css">
+    <script src="../js/tema.js"></script>
     <script src="../js/inicio.js"></script>
     <title>Perícia Fiducia – Digital Forensics</title>
 </head>
@@ -33,8 +34,8 @@
         </ul>
 
         <div class="nav-actions">
-            <button class="btn-tema" onclick="alterar_tema()" title="Alternar tema" aria-label="Alternar tema">
-                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="btn-tema" data-tema-toggle title="Alternar tema" aria-label="Alternar tema">
+                <svg id="tema-icon" class="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
                     <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
                 </svg>
@@ -42,6 +43,7 @@
             <button class="btn-login" onclick="location.href='login.html'">Login</button>
         </div>
     </nav>
+
 
     <main>
         <!-- HERO -->
@@ -267,24 +269,24 @@
                         <div class="card-rec-borda"></div>
                         <div class="card-rec-body">
                             <h4>RECUPERAR<br><span>PEN DRIVE</span></h4>
-                            <p>Consiga de volta as informações do seu pen drive através da recuperação de dados.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <p>Consiga de volta as informações do seu Pen Drive através da recuperação de dados</p>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                     <div class="card-recuperacao reveal-up delay-1">
                         <div class="card-rec-borda"></div>
                         <div class="card-rec-body">
                             <h4>RECUPERAR<br><span>SSD</span></h4>
-                            <p>Recupere dados e informações sequestradas, apagadas ou indisponíveis com análise técnica especializada.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <p>Recupere dados e informações que foram sequestrados</p>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                     <div class="card-recuperacao reveal-up delay-2">
                         <div class="card-rec-borda"></div>
                         <div class="card-rec-body">
                             <h4>RECUPERAR<br><span>HD EXTERNO</span></h4>
-                            <p>Recupere o acesso aos dados que você perdeu quando seu HD externo foi danificado.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <p>Recupere o acesso aos dados que você perdeu quando seu HD foi danificado.</p>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                     <div class="card-recuperacao reveal-up">
@@ -292,23 +294,23 @@
                         <div class="card-rec-body">
                             <h4>RECUPERAR<br><span>VM</span></h4>
                             <p>Recupere dados de máquinas virtuais inacessíveis, apagadas e até mesmo corrompidas.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                     <div class="card-recuperacao reveal-up delay-1">
                         <div class="card-rec-borda"></div>
                         <div class="card-rec-body">
                             <h4>CARTÃO DE<br><span>MEMÓRIA</span></h4>
-                            <p>Independentemente do tamanho do seu dispositivo, somos capazes de trazer suas informações de volta.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <p>Independente do tamanho do seu dispositivo, somos capazes de trazer suas informações de volta</p>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                     <div class="card-recuperacao reveal-up delay-2">
                         <div class="card-rec-borda"></div>
                         <div class="card-rec-body">
                             <h4>RECUPERAR<br><span>HD</span></h4>
-                            <p>Inicie agora a recuperação dos dados do seu desktop com triagem e diagnóstico seguro.</p>
-                            <button class="btn-entendo">→ Entendo melhor</button>
+                            <p>Inicie agora a recuperação dos dados do seu Desktop.</p>
+                            <a href="http://127.0.0.1:3000/frontend/html/servicos.html?vscode-livepreview=true"><button class="btn-entendo">Entenda melhor sobre</button></a>
                         </div>
                     </div>
                 </div>

@@ -17,6 +17,61 @@
 
     --font-display: 'Rajdhani', sans-serif;
     --font-body:    'Nunito', sans-serif;
+
+    /* Tokens dependentes de tema */
+    --clr-page-bg:      var(--clr-dark);
+    --clr-text-page:    var(--clr-white);
+    --clr-header-bg:    var(--clr-dark);
+    --clr-main-grad:    linear-gradient(45deg, var(--clr-red) 0%, var(--clr-blue) 40%, var(--clr-dark) 80%);
+    --clr-form-bg:      rgba(255,255,255,0.05);
+    --clr-form-border:  rgba(179, 167, 167, 0.459);
+    --clr-input-field-bg:     rgba(255,255,255,0.08);
+    --clr-input-field-border: rgba(255, 255, 255, 0.301);
+    --clr-input-text:   var(--clr-white);
+    --clr-label-muted:  rgba(255, 255, 255, 0.55);
+    --clr-desc-muted:   rgba(255,255,255,0.7);
+    --clr-icon-box-bg:     rgba(97, 49, 44, 0.2);
+    --clr-icon-box-border: rgba(255, 255, 255, 0.4);
+}
+
+/* ===== TEMA CLARO — paleta vermelha (igual ao painel
+   esquerdo de login/cadastro) ===== */
+body.claro {
+    --clr-page-bg:      #faf1f0;
+    --clr-text-page:    #2a0e0e;
+    --clr-header-bg:    #ffffff;
+    --clr-main-grad:
+        linear-gradient(155deg,
+            #8b1a1a 0%,
+            #c0392b 28%,
+            #922b21 50%,
+            #2c3e6b 78%,
+            #1a1a2e 100%);
+    --clr-form-bg:      rgba(255, 255, 255, 0.94);
+    --clr-form-border:  rgba(192, 57, 43, 0.22);
+    --clr-input-field-bg:     #ffffff;
+    --clr-input-field-border: rgba(192, 57, 43, 0.28);
+    --clr-input-text:   #2a0e0e;
+    --clr-label-muted:  #7a3a34;
+    --clr-desc-muted:   #5c2b27;
+    --clr-icon-box-bg:     rgba(192, 57, 43, 0.12);
+    --clr-icon-box-border: rgba(192, 57, 43, 0.30);
+    --clr-border:       #e8c9c6;
+    --clr-muted:        #9a6b66;
+}
+
+
+/* Sobre o gradiente vermelho do hero, os textos do form-wrapper e
+   contact-info (fora do hero) precisam permanecer escuros/legíveis,
+   já que esses blocos ficam sobre --clr-page-bg, não sobre o hero. */
+body.claro .hero-title {
+    color: #ffffff;
+    text-shadow: 0 2px 14px rgba(26, 10, 10, 0.35);
+}
+
+body.claro .form-wrapper,
+body.claro .contact-info {
+    color: var(--clr-text-page);
 }
 
 /* ── RESET ───────────────────────────────────────────────── */
@@ -24,21 +79,23 @@
 
 body {
     font-family: var(--font-body);
-    background: var(--clr-dark);
-    color: var(--clr-white);
+    background: var(--clr-page-bg);
+    color: var(--clr-text-page);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: background 0.28s ease, color 0.28s ease;
 }
 
 /* ── HEADER ──────────────────────────────────────────────── */
 .site-header {
-    background: var(--clr-dark);
+    background: var(--clr-header-bg);
     border-bottom: 2px solid var(--clr-red-mid);
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background 0.28s ease;
 }
 
 .header-inner {
@@ -86,14 +143,14 @@ body {
     font-family: 'Rajdhani', sans-serif;
     font-size: 1.30rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--clr-text-page);
     letter-spacing: 0.5px;
 }
  
 .brand-sub {
     font-size: 0.88rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.65);
+    color: var(--clr-label-muted);
     letter-spacing: 2px;
     text-transform: uppercase;
 }
@@ -109,7 +166,7 @@ body {
     font-family: var(--font-body);
     font-size: 0.875rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.75);
+    color: var(--clr-label-muted);
     text-decoration: none;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
@@ -118,13 +175,13 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--clr-white);
-    background: rgba(255,255,255,0.07);
+    color: var(--clr-text-page);
+    background: rgba(15, 27, 50, 0.07);
 }
 
 .nav-link--active {
-    color: var(--clr-white);
-    border-bottom: 1px solid var(--clr-white);
+    color: var(--clr-text-page);
+    border-bottom: 1px solid var(--clr-text-page);
     border-radius: 0;
 }
 
@@ -146,12 +203,44 @@ body {
     transform: translateY(-1px);
 }
 
+/* ── Botão de alternância de tema ──────────── */
+.btn-tema {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(15, 27, 50, 0.18);
+    background: rgba(15, 27, 50, 0.05);
+    color: var(--clr-text-page);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: 0 0.25rem;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+body.claro .btn-tema {
+    border-color: rgba(192, 57, 43, 0.35);
+    background: rgba(192, 57, 43, 0.08);
+    color: var(--clr-red-mid);
+}
+
+.btn-tema:hover {
+    transform: translateY(-1px);
+    background: rgba(0, 217, 208, 0.15);
+}
+
+.btn-tema svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* ── MAIN ────────────────────────────────────────────────── */
 .page-main {
     flex: 1;
-    /* Background gradient inspired by the image: dark blue → dark red */
-    background: linear-gradient(45deg, var(--clr-red) 0%, var(--clr-blue) 40%, var(--clr-dark) 80%);
+    background: var(--clr-main-grad);
     padding: 3rem 2rem 4rem;
+    transition: background 0.28s ease;
 }
 
 /* ── HERO ────────────────────────────────────────────────── */
@@ -164,9 +253,13 @@ body {
     font-family: var(--font-display);
     font-size: clamp(2.2rem, 5vw, 3.4rem);
     font-weight: 700;
-    color: var(--clr-whi);
+    color: var(--clr-text-page);
     letter-spacing: 0.02em;
     line-height: 1;
+}
+
+body.claro .contact-icon {
+    color: var(--clr-white);
 }
 
 /* ── CONTACT SECTION ─────────────────────────────────────── */
@@ -181,14 +274,15 @@ body {
 
 /* ── FORM WRAPPER ────────────────────────────────────────── */
 .form-wrapper {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(179, 167, 167, 0.459);
+    background: var(--clr-form-bg);
+    border: 1px solid var(--clr-form-border);
     border-radius: var(--radius);
     padding: 2rem;
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    transition: background 0.28s ease, border-color 0.28s ease;
 }
 
 .field-row {
@@ -206,34 +300,40 @@ body {
 .field-group label {
     font-size: 0.8rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.39);
+    color: var(--clr-label-muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
 .field-group input,
 .field-group textarea {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255, 255, 255, 0.301);
+    background: var(--clr-input-field-bg);
+    border: 1px solid var(--clr-input-field-border);
     border-radius: 6px;
     padding: 0.65rem 0.9rem;
     font-family: var(--font-body);
     font-size: 0.9rem;
-    color: var(--clr-white);
+    color: var(--clr-input-text);
     outline: none;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
     resize: vertical;
 }
 
 .field-group input::placeholder,
 .field-group textarea::placeholder {
-    color: rgba(255, 255, 255, 0.363);
+    color: var(--clr-muted);
 }
 
 .field-group input:focus,
 .field-group textarea:focus {
     border-color: var(--clr-red);
-    background: rgba(209, 209, 209, 0.247);
+    background: rgba(209, 209, 209, 0.18);
+}
+
+body.claro .field-group input:focus,
+body.claro .field-group textarea:focus {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
 }
 
 .btn-enviar {
@@ -277,7 +377,8 @@ body {
 .info-desc {
     font-size: 0.9rem;
     line-height: 1.7;
-    color: rgba(255,255,255,0.7);
+    color: var(--clr-white
+    );
     margin-bottom: 2rem;
 }
 
@@ -297,13 +398,14 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    background: rgba(97, 49, 44, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: var(--clr-icon-box-bg);
+    border: 1px solid var(--clr-white);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--clr-white);
     flex-shrink: 0;
+    transition: background 0.28s ease, border-color 0.28s ease;
 }
 
 .contact-detail {
@@ -320,20 +422,21 @@ body {
 
 .contact-detail span {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.6);
+    color: var(--clr-white);
 }
 
 /* ── FOOTER ──────────────────────────────────────────────── */
 .site-footer {
-    background: var(--clr-dark);
-    border-top: 1px solid rgba(255,255,255,0.07);
+    background: var(--clr-header-bg);
+    border-top: 1px solid rgba(15, 27, 50, 0.10);
     text-align: center;
     padding: 1.25rem 2rem;
+    transition: background 0.28s ease;
 }
 
 .site-footer p {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.4);
+    color: var(--clr-desc-muted);
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────── */

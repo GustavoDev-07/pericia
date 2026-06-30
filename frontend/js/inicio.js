@@ -1,39 +1,6 @@
 // ===== TEMA CLARO/ESCURO =====
-function alterar_tema() {
-    const body = document.body;
-    const temaIcon = document.getElementById('tema-icon');
-    
-    body.classList.toggle('claro');
-    
-    // Salvar preferência no localStorage
-    const temaSalvo = body.classList.contains('claro') ? 'claro' : 'escuro';
-    localStorage.setItem('tema', temaSalvo);
-    
-    // Atualizar ícone
-    atualizarIconeTema();
-}
-
-function atualizarIconeTema() {
-    const body = document.body;
-    const temaIcon = document.getElementById('tema-icon');
-    
-    if (body.classList.contains('claro')) {
-        // Ícone da lua (tema claro ativo)
-        temaIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-    } else {
-        // Ícone do sol (tema escuro ativo)
-        temaIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-    }
-}
-
-// Carregar tema salvo ao iniciar
-window.addEventListener('DOMContentLoaded', function() {
-    const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    if (temaSalvo === 'claro') {
-        document.body.classList.add('claro');
-    }
-    atualizarIconeTema();
-});
+// Gerenciamento de tema centralizado em tema.js (ver ../js/tema.js)
+// As funções alternar_tema() e alterar_tema() são expostas globalmente por ele.
 
 // ===== NAVEGAÇÃO ATIVA =====
 window.addEventListener('scroll', function() {
@@ -190,3 +157,51 @@ window.addEventListener('load', setupMobileMenu);
 console.log('✓ Perícia Fiducia - Website carregado com sucesso!');
 console.log('✓ Tema: ' + (localStorage.getItem('tema') || 'escuro'));
 console.log('✓ Versão: 1.0.0');
+
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token')
+
+    if(token){
+        carregarDadosUsuario(token);
+    }else {
+        configurarModoVisitante();
+    };
+});
+
+async function carregarDadosUsuario(token) {
+    try {
+        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ${token}',
+                'Content-Type': 'application/json'
+            }
+        })
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            document.getElementById('area-usuario').innerHTML = `
+                <span>Olá, ${dados.nome}!</span>
+                <button onclick="deslogarUsuario()">Sair</button>
+            `;
+        } else{
+            console.warn("Token Inválido ou Expirado!");
+            localStorage.removeItem('token');
+            configurarModoVisitante();
+        }
+    }catch (error) {
+        console.error("Erro ao buscar dados do perfil:", error);
+        configurarModoVisitante();
+    }
+}
+
+function configurarModoVisitante() {
+    document.getElementById('area-usuario').innerHTML = `
+        <a href="login.html"><button>Login</button></a>
+    `;
+}
+
+function deslogarUsuario() {
+    localStorage.removeItem('token');
+    window.location.reload();
+}
