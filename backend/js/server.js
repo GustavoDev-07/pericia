@@ -2,6 +2,7 @@ import express, { raw } from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
 import executarQuery from './db.js';
+import bcrypt from 'bcrypt'
 
 const app = express();
 
@@ -33,7 +34,7 @@ app.post('/login', async (req, res) => {
     try {
         const resultado = await executarQuery(query, [email]);
 
-        const usuarios = await resultado[0];
+        const usuarios = await resultado[0]; 
 
         if (!usuarios || usuarios.length === 0) {
             return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
@@ -41,7 +42,9 @@ app.post('/login', async (req, res) => {
 
         const usuarioEncontrado = usuarios[0];
 
-        if (usuarioEncontrado.senha !== senha) {
+        const senhaCorreta = await bcrypt.compare(senha, usuarioEncontrado.senha);
+
+        if (!senhaCorreta) {
             return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
         }
 
@@ -82,15 +85,20 @@ app.post('/cadastro', async (req, res) => {
         )
     `
 
-    var usuario = [
-        req.body.nome,
-        req.body.email,
-        req.body.dataNascimento,
-        req.body.cpfCnpj,
-        req.body.senha
-    ];
-
+    
     try {
+        const senhaOriginal = req.body.senha;
+        
+        const senhaCriptografada = await bcrypt.hash(senhaOriginal, 12);
+        
+        var usuario = [
+            req.body.nome,
+            req.body.email,
+            req.body.dataNascimento,
+            req.body.cpfCnpj,
+            senhaCriptografada
+        ];
+
         let resultado = await executarQuery(query, usuario);
         res.send({
             insertId: resultado.insertId || (resultado[0] && resultado[0].insertId),
