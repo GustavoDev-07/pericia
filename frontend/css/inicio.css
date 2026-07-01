@@ -738,7 +738,7 @@ body.claro .secao-titulo {
 }
 
 .card-img-placeholder {
-   border-radius: ;
+   border-radius: 20px;
    
 }
 
@@ -1268,5 +1268,202 @@ body.claro .dep-top strong {
     .rodape-inner {
         flex-direction: column;
         text-align: center;
+    }
+}
+
+/* ===== ÁREA DO USUÁRIO — AVATAR & DROPDOWN ===== */
+
+#area-usuario {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* ---------- Wrapper do avatar (modo logado) ---------- */
+.user-avatar-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Avatar circular */
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d9d0 0%, #0066ff 100%);
+    border: 2px solid rgba(0, 217, 208, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 217, 208, 0.28);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+    overflow: hidden;
+}
+
+.user-avatar-wrapper:hover .user-avatar,
+.user-avatar-wrapper:focus .user-avatar {
+    transform: scale(1.06);
+    box-shadow: 0 6px 24px rgba(0, 217, 208, 0.45);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Iniciais dentro do avatar */
+.user-avatar-iniciais {
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    line-height: 1;
+}
+
+/* Foto personalizada (caso exista img dentro do avatar) */
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* ---------- Dropdown flutuante ---------- */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 210px;
+    background: #12121e;
+    border: 1px solid rgba(0, 217, 208, 0.18);
+    border-radius: 16px;
+    padding: 6px 0;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(0, 217, 208, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.97);
+    transform-origin: top right;
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease,
+        visibility 0.18s;
+    z-index: 1100;
+    pointer-events: none;
+}
+
+/* Setinha acima do dropdown */
+.user-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: #12121e;
+    border-left: 1px solid rgba(0, 217, 208, 0.18);
+    border-top: 1px solid rgba(0, 217, 208, 0.18);
+    transform: rotate(45deg);
+}
+
+/* Mostrar ao hover ou focus no wrapper */
+.user-avatar-wrapper:hover .user-dropdown,
+.user-avatar-wrapper:focus .user-dropdown,
+.user-avatar-wrapper:focus-within .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Header do dropdown */
+.user-dropdown-header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-dropdown-name {
+    display: block;
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-dropdown-label {
+    display: block;
+    color: #7a7a9a;
+    font-size: 0.72rem;
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Itens do dropdown */
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: #aaaacc;
+    font-size: 0.875rem;
+    font-family: var(--font-body);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.user-dropdown-item:hover {
+    background: rgba(0, 217, 208, 0.08);
+    color: #00d9d0;
+}
+
+.user-dropdown-item svg {
+    flex-shrink: 0;
+    opacity: 0.65;
+    transition: opacity 0.15s;
+}
+
+.user-dropdown-item:hover svg {
+    opacity: 1;
+}
+
+/* Separador */
+.user-dropdown-separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 4px 0;
+}
+
+/* Item de perigo (Sair) */
+.user-dropdown-item.danger {
+    color: #ef4e59;
+}
+
+.user-dropdown-item.danger:hover {
+    background: rgba(239, 78, 89, 0.10);
+    color: #ff7070;
+}
+
+.user-dropdown-item.danger svg {
+    opacity: 0.8;
+}
+
+/* Responsivo mobile */
+@media (max-width: 768px) {
+    .user-dropdown {
+        right: 0;
+        min-width: 190px;
     }
 }
