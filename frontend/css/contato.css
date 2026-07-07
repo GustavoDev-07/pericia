@@ -129,6 +129,7 @@ body {
     object-fit: contain;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
     transform: scale(2.30);
+    
 }
  
 .brand-text {
@@ -274,7 +275,7 @@ body.claro .contact-icon {
 
 /* ── FORM WRAPPER ────────────────────────────────────────── */
 .form-wrapper {
-    background: var(--clr-form-bg);
+    background: rgba(14, 13, 13, 0.219);
     border: 1px solid var(--clr-form-border);
     border-radius: var(--radius);
     padding: 2rem;
@@ -300,7 +301,7 @@ body.claro .contact-icon {
 .field-group label {
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--clr-label-muted);
+    color: var(--clr-white);
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
