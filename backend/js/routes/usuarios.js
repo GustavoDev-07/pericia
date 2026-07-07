@@ -195,4 +195,26 @@ router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async 
     }
 });
 
+router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
+    const dispositivoId = req.params.id;
+
+    const query = `
+        UPDATE dispositivos 
+        SET status = 'recebido_na_empresa' 
+        WHERE id = ? AND status = 'aguardando_envio'
+    `;
+
+    try {
+        const result = await executarQuery(query, [dispositivoId]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ erro: "Dispositivo não encontrado ou já recebido." });
+        }
+        
+        return res.json({ mensagem: "Dispositivo bipado e recebido com sucesso! Já está na fila dos peritos." });
+    } catch (error) {
+        return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
 export default router;
