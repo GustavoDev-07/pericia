@@ -1,39 +1,6 @@
 // ===== TEMA CLARO/ESCURO =====
-function alterar_tema() {
-    const body = document.body;
-    const temaIcon = document.getElementById('tema-icon');
-    
-    body.classList.toggle('claro');
-    
-    // Salvar preferência no localStorage
-    const temaSalvo = body.classList.contains('claro') ? 'claro' : 'escuro';
-    localStorage.setItem('tema', temaSalvo);
-    
-    // Atualizar ícone
-    atualizarIconeTema();
-}
-
-function atualizarIconeTema() {
-    const body = document.body;
-    const temaIcon = document.getElementById('tema-icon');
-    
-    if (body.classList.contains('claro')) {
-        // Ícone da lua (tema claro ativo)
-        temaIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-    } else {
-        // Ícone do sol (tema escuro ativo)
-        temaIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-    }
-}
-
-// Carregar tema salvo ao iniciar
-window.addEventListener('DOMContentLoaded', function() {
-    const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    if (temaSalvo === 'claro') {
-        document.body.classList.add('claro');
-    }
-    atualizarIconeTema();
-});
+// Gerenciamento de tema centralizado em tema.js (ver ../js/tema.js)
+// As funções alternar_tema() e alterar_tema() são expostas globalmente por ele.
 
 // ===== NAVEGAÇÃO ATIVA =====
 window.addEventListener('scroll', function() {
