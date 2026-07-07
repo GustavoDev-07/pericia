@@ -162,4 +162,37 @@ router.put('/admin/recusar-perito/:id', verificarToken, permitirCargos(['admin']
     }
 });
 
+router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async (req, res) => {
+    try {
+        const [peritos] = await executarQuery(
+            "SELECT COUNT(*) AS total FROM usuarios WHERE role = 'perito'"
+        );
+
+        const [aguardando] = await executarQuery(
+            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'aguardando_perito'"
+        );
+
+        const [emAnalise] = await executarQuery(
+            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'em_analise'"
+        );
+
+        const [porTipo] = await executarQuery(
+            "SELECT tipo_dispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipo_dispositivo"
+        );
+
+        return res.json({
+            cards: {
+                total_peritos: peritos[0].total,
+                fila_espera: aguardando[0].total,
+                em_analise: emAnalise[0].total
+            },
+            grafico_tipos: porTipo
+        });
+
+    } catch (error) {
+        console.error("Erro ao gerar dashboard:", error);
+        return res.status(500).json({ erro: "Erro interno ao gerar dados do painel." });
+    }
+});
+
 export default router;
