@@ -13,6 +13,7 @@ app.use(express.json());
 app.use('/api/auth', rotasUsuarios);
 app.use('/api/feedbacks', rotasFeedbacks);
 app.use('/api/dispositivos', rotasDispositivos);
+app.use('/uploads', express.static('uploads'));
 
 app.listen(3000, () => {
     console.log("Servidor online em: http://localhost:3000")
