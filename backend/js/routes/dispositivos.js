@@ -61,11 +61,16 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['peritos
 
 router.get('/disponiveis', verificarToken, permitirCargos(['perito', 'admin']), async (req, res) => {
     try {
-        const [dispositivosLivres] = await executarQuery(
-            'SELECT * FROM dispositivos WHERE perito_id IS NULL'
-        );
+
+        const query = `
+        SELECT * FROM dispositivos
+        WHERE perito_id IS NULL AND status = 'recebido_na_empresa'
+        `;
+
+        const [dispositivosLivres] = await executarQuery(query)
         return res.json(dispositivosLivres);
     }catch (error) {
+        console.error("Erro ao buscar fila de peritos:", error)
         return res.status(500).json({erro: "Erro ao buscar dispositivos disponíveis."});
     }
 });
@@ -167,6 +172,104 @@ router.get('/dados-laudo/:id', verificarToken, permitirCargos(['cliente', 'perit
     } catch (error) {
         console.error("Erro ao buscar dados do laudo:", error);
         return res.status(500).json({ erro: "Erro interno ao buscar dados do laudo." });
+    }
+});
+
+router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (req, res) => {
+    const usuarioId = req.usuario.id;
+    
+    const { 
+        tipoDispositivo, 
+        modeloDescricao, 
+        formaEntrega,
+        endereco 
+    } = req.body;
+
+    if (!tipoDispositivo || !modeloDescricao || !formaEntrega) {
+        return res.status(400).json({ erro: "Campos obrigatórios ausentes." });
+    }
+
+    const tipoFormatado = tipoDispositivo.toLowerCase();
+    const formaFormatada = formaEntrega.toLowerCase();
+    let enderecoId = null;
+
+    try {
+        if (formaFormatada === 'correios') {
+            if (!endereco || !endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+                return res.status(400).json({ erro: "Para envio via Correios, o endereço de devolução completo é obrigatório." });
+            }
+
+            const queryEndereco = `
+                INSERT INTO enderecos_devolucao (usuario_id, cep, logradouro, numero, complemento, bairro, cidade, estado)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const resultEndereco = await executarQuery(queryEndereco, [
+                usuarioId, 
+                endereco.cep, 
+                endereco.logradouro, 
+                endereco.numero, 
+                endereco.complemento || null, 
+                endereco.bairro, 
+                endereco.cidade, 
+                endereco.estado
+            ]);
+
+            enderecoId = resultEndereco.insertId;
+        }
+
+        const queryDispositivo = `
+            INSERT INTO dispositivos (usuario_id, tipo_dispositivo, modelo_descricao, forma_entrega, endereco_devolucao_id, status) 
+            VALUES (?, ?, ?, ?, ?, 'aguardando_envio')
+        `;
+        
+        await executarQuery(queryDispositivo, [
+            usuarioId, 
+            tipoFormatado, 
+            modeloDescricao, 
+            formaFormatada, 
+            enderecoId
+        ]);
+
+        return res.status(201).json({ 
+            mensagem: formaFormatada === 'correios' 
+                ? "Dispositivo registrado! Por favor, poste nos Correios e insira o código de rastreamento no painel."
+                : "Dispositivo registrado! Aguardamos a entrega no balcão da empresa."
+        });
+
+    } catch (error) {
+        console.error("Erro no fluxo de cadastro:", error);
+        return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
+router.put('/atualizar-rastreio/:id', verificarToken, permitirCargos(['cliente']), async (req, res) => {
+    const dispositivoId = req.params.id;
+    const usuarioId = req.usuario.id;
+    
+    const { codigoRastreio } = req.body;
+
+    if (!codigoRastreio) {
+        return res.status(400).json({ erro: "O código de rastreamento é obrigatório." });
+    }
+
+    const query = `
+        UPDATE dispositivos 
+        SET codigo_rastreio = ? 
+        WHERE id = ? AND usuario_id = ? AND forma_entrega = 'correios'
+    `;
+
+    try {
+        const result = await executarQuery(query, [codigoRastreio, dispositivoId, usuarioId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ erro: "Dispositivo não encontrado ou modalidade não é via Correios." });
+        }
+
+        return res.json({ mensagem: "Código de rastreamento atualizado com sucesso! A empresa acompanhará a entrega." });
+    } catch (error) {
+        console.error("Erro ao atualizar rastreio:", error);
+        return res.status(500).json({ erro: "Erro interno no servidor." });
     }
 });
 
