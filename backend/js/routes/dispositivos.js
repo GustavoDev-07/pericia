@@ -4,7 +4,8 @@ const router = Router();
 import { upload } from "../upload.js";
 
 router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async (req, res) => {
-    const userId = req.usuario.id;
+
+    const userId = req.usuario.id; 
 
     const query = `
         SELECT d.*, u.nome AS nome_perito 
@@ -27,7 +28,7 @@ router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async 
     }
 });
 
-router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'], upload.single('foto')), async (req, res) => {
+router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito']), upload.single('foto'), async (req, res) => {
     const dispositivoId = req.params.id;
     const peritoId = req.usuario.id;
 
@@ -35,7 +36,7 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'
 
     const query = `
         UPDATE dispositivos
-        SET perito_id = ?, status = 'em_analise', 'foto_evidencia' = ?
+        SET perito_id = ?, status = 'em_analise', foto_envidencia = ?
         WHERE id = ? AND perito_id IS NULL 
     `;
 
@@ -86,30 +87,6 @@ router.get('/meus-casos', verificarToken, permitirCargos(['perito']), async (req
         return res.json(meusDispositivos);
     }catch (error) {
         return res.json({erro: "Erro ao buscar seus casos."});
-    }
-});
-
-router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (req, res) => {
-    const usuarioId = req.usuario.id; 
-    const { tipo_dispositivo, modelo_descricao } = req.body;
-
-    if (!tipo_dispositivo || !modelo_descricao) {
-        return res.status(400).json({ erro: "Todos os campos são obrigatórios." });
-    }
-
-    const tipoFormatado = tipo_dispositivo.toLowerCase();
-
-    const query = `
-        INSERT INTO dispositivos (usuario_id, tipo_dispositivo, modelo_descricao, status) 
-        VALUES (?, ?, ?, 'aguardando_perito')
-    `;
-
-    try {
-        await executarQuery(query, [usuarioId, tipoFormatado, modelo_descricao]);
-        return res.status(201).json({ mensagem: "Dispositivo cadastrado com sucesso!" });
-    } catch (error) {
-        console.error("Erro ao cadastrar dispositivo:", error);
-        return res.status(500).json({ erro: "Erro interno do servidor ao cadastrar." });
     }
 });
 
@@ -275,46 +252,26 @@ router.put('/atualizar-rastreio/:id', verificarToken, permitirCargos(['cliente']
 
 router.put('/logistica/receber/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
     const dispositivoId = req.params.id;
-
-    const query = `
-        UPDATE dispositivos 
-        SET status = 'recebido_na_empresa' 
-        WHERE id = ? AND status = 'aguardando_envio'
-    `;
+    const query = `UPDATE dispositivos SET status = 'recebido_na_empresa' WHERE id = ? AND status = 'aguardando_envio'`;
 
     try {
         const result = await executarQuery(query, [dispositivoId]);
-        
-        if (result.affectedRows === 0) {
-            return res.status(400).json({ erro: "Dispositivo não encontrado ou já passou da fase de recebimento." });
-        }
-        
-        return res.json({ mensagem: "Entrada confirmada! O dispositivo já está disponível na fila dos peritos." });
+        if (result.affectedRows === 0) return res.status(400).json({ erro: "Dispositivo indisponível para recebimento." });
+        return res.json({ mensagem: "Entrada confirmada! Disponível para os peritos." });
     } catch (error) {
-        console.error("Erro no recebimento logístico:", error);
         return res.status(500).json({ erro: "Erro interno no servidor." });
     }
 });
 
 router.put('/logistica/devolver/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
     const dispositivoId = req.params.id;
-
-    const query = `
-        UPDATE dispositivos 
-        SET status = 'concluida' -- Ou 'devolvido', caso adicione esse status no banco
-        WHERE id = ? AND status = 'concluida'
-    `;
+    const query = `UPDATE dispositivos SET status = 'concluida' WHERE id = ? AND status = 'concluida'`;
 
     try {
         const result = await executarQuery(query, [dispositivoId]);
-        
-        if (result.affectedRows === 0) {
-            return res.status(400).json({ erro: "Este dispositivo não está pronto para devolução (a perícia ainda não foi concluída)." });
-        }
-        
-        return res.json({ mensagem: "Devolução registrada com sucesso! Processo logístico encerrado." });
+        if (result.affectedRows === 0) return res.status(400).json({ erro: "A perícia deste item ainda não foi concluída." });
+        return res.json({ mensagem: "Devolução registrada com sucesso!" });
     } catch (error) {
-        console.error("Erro na devolução logística:", error);
         return res.status(500).json({ erro: "Erro interno no servidor." });
     }
 });

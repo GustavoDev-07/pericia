@@ -2,9 +2,9 @@ import { Router } from 'express';
 import db from '../db.js'
 import { verificarToken, permitirCargos } from '../autenticacao.js';
 const router = Router();
-import { registrarLog } from "../log.js"
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
+import { registrarLog } from "../log.js";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 // 
 // import express, { raw, Router } from 'express'
 // import cors from 'cors'
@@ -115,62 +115,16 @@ router.post('/cadastro', async (req, res) => {
     }
 });
 
-router.put('/candidatar-perito', verificarToken, (req, res) => {
+router.put('/candidatar-perito', verificarToken, async (req, res) => {
     const idUsuario = req.usuario.id;
 
     const query = "UPDATE usuarios SET status_aprovacao = 'pendente' WHERE id = ? AND role = 'cliente'";
 
-   try {
-        const result = await executarQuery(query, [idUsuario]);
+    try {
+        await executarQuery(query, [idUsuario]);
         return res.json({ mensagem: "Sua candidatura a perito foi enviada! Aguarde o retorno."});
     } catch (error) {
-        return res.status(500).json({erro: "Erro ao enviar candidatura."});
-    }
-});
-
-router.put('/admin/aprovar-perito/:id', verificarToken, permitirCargos(['admin']), (req, res) => {
-    const idCandidato = req.params.id;
-    const adminId = req.usuario.id;
-    const adminNome = req.usuario.nome;
-
-    const query =`
-        UPDATE usuarios
-        SET role = 'perito', status_aprovacao = 'aprovado'
-        WHERE id = ? AND status_aprovacao = 'pendente'
-    `;
-
-    try {
-        const result = await executarQuery(query, [idCandidato]);
-        if (result.affectedRows === 0) return res.status(404).json({mensagem: "Candidatura não encontrada."});
-
-        await registrarLog(adminId, adminNome, "Promoção", `Aprovado perito ID ${idCandidato}`);
-        return res.json({ mensagem: "Usuário promovido a Perito com sucesso!" });
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro ao promover usuário."});
-    }
-});
-
-router.put('/admin/recusar-perito/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    const idCandidato = req.params.id;
-
-    const query = `
-        UPDATE usuarios 
-        SET status_aprovacao = 'recusado' 
-        WHERE id = ? AND status_aprovacao = 'pendente'
-    `;
-
-    try {
-        const result = await executarQuery(query, [idCandidato]);
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ mensagem: "Candidatura não encontrada ou já processada." });
-        }
-        
-        return res.json({ mensagem: "Candidatura recusada com sucesso. O usuário permanece como cliente." });
-        
-    } catch (error) {
-        console.error("Erro ao recusar perito:", error);
-        return res.status(500).json({ erro: "Erro interno no servidor." });
+        return res.status(500).json({ erro: "Erro ao enviar candidatura." });
     }
 });
 
@@ -229,14 +183,12 @@ router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['ad
     }
 });
 
-// GET: Retorna os últimos logs de auditoria para o Admin
 router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
         const query = `
             SELECT id, usuario_id AS usuarioId, usuario_nome AS usuarioNome, acao, detalhes, 
                    DATE_FORMAT(criado_em, '%d/%m/%Y %H:%i') AS criadoEm 
-            FROM logs_auditoria 
-            ORDER BY id DESC LIMIT 100
+            FROM logs_auditoria ORDER BY id DESC LIMIT 100
         `;
         const [logs] = await executarQuery(query);
         return res.json(logs);
@@ -245,14 +197,9 @@ router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), a
     }
 });
 
-// GET: Lista de usuários que solicitaram cargo de perito ou logística
 router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
-        const query = `
-            SELECT id, nome, email, role AS cargoAtual, status_aprovacao AS statusAprovacao 
-            FROM usuarios 
-            WHERE status_aprovacao = 'pendente'
-        `;
+        const query = "SELECT id, nome, email, role AS cargoAtual, status_aprovacao AS statusAprovacao FROM usuarios WHERE status_aprovacao = 'pendente'";
         const [candidaturas] = await executarQuery(query);
         return res.json(candidaturas);
     } catch (error) {
@@ -260,46 +207,30 @@ router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['adm
     }
 });
 
-// PUT: Admin aprova ou recusa alteração de cargo
 router.put('/admin/auditoria/decidir-candidatura/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
     const usuarioAlvoId = req.params.id;
-    const adminNome = req.usuario.nome; // Nome do admin logado
-    const adminId = req.usuario.id;     // ID do admin logado
-    const { acao, cargoDesejado } = req.body; // acao: 'aprovar' ou 'recusar', cargoDesejado: 'perito' ou 'logistica'
+    const adminNome = req.usuario.nome;
+    const adminId = req.usuario.id;
+    const { acao, cargoDesejado } = req.body;
 
-    if (!acao || !cargoDesejado) {
-        return res.status(400).json({ erro: "Ação (aprovar/recusar) e cargo desejado são obrigatórios." });
-    }
+    if (!acao || !cargoDesejado) return res.status(400).json({ erro: "Campos obrigatórios ausentes." });
 
     try {
-        // Busca o nome do usuário que está recebendo a alteração
         const [usuario] = await executarQuery("SELECT nome FROM usuarios WHERE id = ?", [usuarioAlvoId]);
-        if (usuario.length === 0) return res.status(404).json({ erro: "Usuário não encontrado." });
+        if (!usuario || usuario.length === 0) return res.status(404).json({ erro: "Usuário não encontrado." });
         
         const nomeUsuarioAlvo = usuario[0].nome;
 
         if (acao.toLowerCase() === 'aprovar') {
-            // Atualiza o cargo e aprova
-            await executarQuery(
-                "UPDATE usuarios SET role = ?, status_aprovacao = 'aprovado' WHERE id = ?", 
-                [cargoDesejado.toLowerCase(), usuarioAlvoId]
-            );
-            
-            // Grava na Auditoria
-            await registrarLog(adminId, adminNome, "Promoção de Cargo", `Admin aprovou ${nomeUsuarioAlvo} (ID: ${usuarioAlvoId}) como ${cargoDesejado}.`);
-            
+            await executarQuery("UPDATE usuarios SET role = ?, status_aprovacao = 'aprovado' WHERE id = ?", [cargoDesejado.toLowerCase(), usuarioAlvoId]);
+            await registrarLog(adminId, adminNome, "Promoção de Cargo", `Aprovou ${nomeUsuarioAlvo} como ${cargoDesejado}.`);
             return res.json({ mensagem: `Usuário promovido a ${cargoDesejado} com sucesso!` });
         } else {
-            // Apenas recusa a candidatura e o mantém como cliente
             await executarQuery("UPDATE usuarios SET status_aprovacao = 'recusado' WHERE id = ?", [usuarioAlvoId]);
-            
-            // Grava na Auditoria
-            await registrarLog(adminId, adminNome, "Candidatura Recusada", `Admin recusou o pedido de ${nomeUsuarioAlvo} (ID: ${usuarioAlvoId}) para o cargo de ${cargoDesejado}.`);
-            
+            await registrarLog(adminId, adminNome, "Candidatura Recusada", `Recusou o pedido de ${nomeUsuarioAlvo} para ${cargoDesejado}.`);
             return res.json({ mensagem: "Candidatura recusada com sucesso." });
         }
     } catch (error) {
-        console.error("Erro ao decidir candidatura:", error);
         return res.status(500).json({ erro: "Erro interno do servidor." });
     }
 });
