@@ -1,4 +1,3 @@
-
 // // ── Injeta CSS de extras automaticamente ────
 // (function injectCSS() {
 //   const link = document.createElement('link');
@@ -172,107 +171,98 @@
 //     }
 //   });
 
-<<<<<<< HEAD
-  // Limpa erro ao digitar
-  ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', () => limparErro(id));
-  });
-});
-/* ============================================================
-   tema.js – Perícia Fiducia
-   Gerenciamento centralizado de tema claro/escuro.
-   Inclua este arquivo em TODAS as páginas do sistema.
-   ============================================================ */
-
-/* ============================================================
-   tema.js – Perícia Fiducia
-   Gerenciamento centralizado de tema claro/escuro.
-   Inclua este arquivo em TODAS as páginas do sistema.
-   ============================================================ */
-
-(function () {
-    'use strict';
-
-    /* Aplica tema salvo imediatamente para evitar flash */
-    const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    if (temaSalvo === 'claro') {
-        document.documentElement.classList.add('claro');
-    }
-
-    function alternarTema() {
-        const body  = document.body;
-        const html  = document.documentElement;
-        const ativandoClaro = !body.classList.contains('claro');
-
-        body.classList.toggle('claro',  ativandoClaro);
-        html.classList.toggle('claro',  ativandoClaro);
-        localStorage.setItem('tema', ativandoClaro ? 'claro' : 'escuro');
-        _atualizarBotoes();
-    }
-
-    function _atualizarBotoes() {
-        const eClaro = document.body.classList.contains('claro');
-
-        document.querySelectorAll('.tema-icon').forEach(function (icon) {
-            if (eClaro) {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        });
-
-        /* Retrocompatibilidade com ID tema-icon (inicio.html) */
-        const legado = document.getElementById('tema-icon');
-        if (legado) {
-            if (eClaro) {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.setAttribute('aria-label',
-                eClaro ? 'Alternar para tema escuro' : 'Alternar para tema claro');
-            btn.setAttribute('title',
-                eClaro ? 'Tema escuro' : 'Tema claro');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const tema = localStorage.getItem('tema') || 'escuro';
-        if (tema === 'claro') {
-            document.body.classList.add('claro');
-            document.documentElement.classList.add('claro');
-        } else {
-            document.body.classList.remove('claro');
-            document.documentElement.classList.remove('claro');
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.addEventListener('click', alternarTema);
-        });
-
-        _atualizarBotoes();
-    });
-
-    window.alternarTema = alternarTema;
-    window.alterar_tema = alternarTema; /* alias legado */
-})();
-=======
 //   // Limpa erro ao digitar
 //   ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(id => {
 //     const el = document.getElementById(id);
 //     if (el) el.addEventListener('input', () => limparErro(id));
 //   });
 // });
->>>>>>> c1b9fa884d0bc3eb12f8193db6c084163dfb80f4
+
+
+// ══════════════════════════════════════════════════════════
+// TELEFONE: máscara (parênteses + traço), limpeza e código de país
+// ══════════════════════════════════════════════════════════
+
+// Aplica a máscara (DD) DDDDD-DDDD (ou (DD) DDDD-DDDD para fixo)
+// enquanto o usuário digita, adaptando o formato conforme a quantidade
+// de dígitos já informados.
+function aplicarMascaraTelefone(valor) {
+    valor = valor.replace(/\D/g, ''); // remove tudo que não é número
+    valor = valor.slice(0, 11);       // limita a DDD + 9 dígitos (celular)
+
+    if (valor.length > 10) {
+        // Celular: (99) 99999-9999
+        valor = valor.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+    } else if (valor.length > 6) {
+        // Fixo: (99) 9999-9999
+        valor = valor.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+    } else if (valor.length > 2) {
+        // Ainda digitando o número, já fechando o DDD
+        valor = valor.replace(/^(\d{2})(\d*)/, '($1) $2');
+    } else if (valor.length > 0) {
+        // Só o início do DDD
+        valor = valor.replace(/^(\d*)/, '($1');
+    }
+
+    return valor;
+}
+
+// Remove parênteses, espaços, traços e qualquer caractere que não seja
+// número, garantindo que o valor salvo no banco fique só com dígitos.
+function limparTelefone(valor) {
+    return (valor || '').replace(/\D/g, '');
+}
+
+// Retorna o código do país (DDI) atualmente selecionado no <select id="pais">
+function obterCodigoPais() {
+    const selectPais = document.getElementById('pais');
+    return selectPais ? selectPais.value : '';
+}
+
+// Ajusta o placeholder do campo telefone de acordo com o país escolhido
+// (função responsável por alterar o comportamento do campo conforme o
+// código do país selecionado).
+function alterarCodigoPais() {
+    const selectPais = document.getElementById('pais');
+    const inputTelefone = document.getElementById('telefone');
+    if (!selectPais || !inputTelefone) return;
+
+    const opcaoSelecionada = selectPais.selectedOptions[0];
+    const sigla = opcaoSelecionada ? opcaoSelecionada.dataset.sigla : null;
+
+    if (sigla === 'BR') {
+        inputTelefone.placeholder = '(00) 00000-0000';
+    } else {
+        inputTelefone.placeholder = '(00) 0000-0000';
+    }
+
+    // Reaplica a máscara em cima do que já foi digitado
+    inputTelefone.value = aplicarMascaraTelefone(inputTelefone.value);
+}
+
+// Monta o telefone completo (código do país + número já limpo), pronto
+// para ser enviado/salvo. Ex.: "5511999999999"
+function montarTelefoneCompleto() {
+    const inputTelefone = document.getElementById('telefone');
+    if (!inputTelefone) return '';
+
+    const ddi = obterCodigoPais();
+    const numeroLimpo = limparTelefone(inputTelefone.value);
+
+    return numeroLimpo ? `${ddi}${numeroLimpo}` : '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const inputTelefone = document.getElementById('telefone');
+    const selectPais = document.getElementById('pais');
+
+    if (inputTelefone) {
+        inputTelefone.addEventListener('input', (evento) => {
+            evento.target.value = aplicarMascaraTelefone(evento.target.value);
+        });
+    }
+
+    if (selectPais) {
+        selectPais.addEventListener('change', alterarCodigoPais);
+    }
+});

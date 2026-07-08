@@ -66,7 +66,12 @@ async function carregarPedidos(token) {
 
         vazio.style.display = 'none';
         container.innerHTML = '';
-        pedidos.forEach(pedido => container.appendChild(criarCardPedido(pedido, token)));
+
+        // Anima a entrada de cada card em sequência, um pouco depois do outro
+        pedidos.forEach((pedido, indice) => {
+            const card = criarCardPedido(pedido, token);
+            animarEntradaCard(card, container, indice);
+        });
 
     } catch (error) {
         console.error('Erro ao buscar pedidos:', error);
@@ -76,7 +81,7 @@ async function carregarPedidos(token) {
 
 function criarCardPedido(pedido, token) {
     const template = document.getElementById('template-pedido');
-    const card = template.content.cloneNode(true);
+    const card = template.content.firstElementChild.cloneNode(true);
 
     const dispositivo = pedido.dispositivo || pedido.nome_dispositivo || 'Dispositivo não informado';
     const descricao = pedido.descricao_item || pedido.descricao || '—';
@@ -93,8 +98,7 @@ function criarCardPedido(pedido, token) {
     const { texto: statusTexto, concluido } = calcularStatus(pedido);
     card.querySelector('.pedido-status').textContent = statusTexto;
 
-    const artigo = card.querySelector('.pedido-item');
-    artigo.dataset.id = pedido.id;
+    card.dataset.id = pedido.id;
 
     const btnCancelar = card.querySelector('.btn-cancelar-pedido');
     const btnVerLaudo = card.querySelector('.btn-ver-laudo');
@@ -113,6 +117,24 @@ function criarCardPedido(pedido, token) {
     }
 
     return card;
+}
+
+// ===================== ANIMAÇÃO DE ENTRADA DOS CARDS =====================
+
+function animarEntradaCard(card, container, indice) {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(16px)';
+    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+
+    container.appendChild(card);
+
+    // Pequeno atraso entre cada item para dar efeito de "surgindo em sequência"
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        });
+    }, indice * 120);
 }
 
 function calcularStatus(pedido) {
@@ -225,9 +247,17 @@ function configurarModalNovoPedido(token) {
                 return;
             }
 
+            const pedidoCriado = await resposta.json().catch(() => dados);
+
             modal.style.display = 'none';
             exibirMensagem('Pedido enviado com sucesso!', false);
-            carregarPedidos(token);
+
+            // Adiciona o novo card já com animação de entrada, sem precisar recarregar tudo
+            const vazio = document.getElementById('lista-pedidos-vazia');
+            vazio.style.display = 'none';
+            const container = document.getElementById('lista-pedidos-itens');
+            const card = criarCardPedido(pedidoCriado, token);
+            animarEntradaCard(card, container, 0);
 
         } catch (error) {
             console.error('Erro ao enviar pedido:', error);
