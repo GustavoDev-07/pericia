@@ -1,17 +1,22 @@
 // ==========================================================================
-// servicos.js
-// Lógica da tela "Meus Serviços": listar pedidos do cliente, cancelar pedido,
-// visualizar laudo técnico de pedidos concluídos e abrir formulário de
-// novo pedido / novo dispositivo.
+// usuario.js
+// Lógica da tela "Minha Conta": dados do perfil, troca de foto, exclusão de
+// conta, listagem dos pedidos do cliente com barra de progresso, exclusão
+// de item da lista e visualização do laudo técnico quando concluído.
 //
 // IMPORTANTE: este arquivo assume que o backend expõe as seguintes rotas
-// (conforme a documentação de integração da API recebida):
-//   GET    /api/dispositivos/meus-servicos        -> lista os pedidos do cliente logado
-//   POST   /api/dispositivos/solicitar             -> cria um novo pedido/dispositivo
-//   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido
-// As duas últimas (POST e DELETE) não constavam na documentação recebida e
-// precisam existir no backend para que este arquivo funcione. Nenhuma
-// alteração de backend foi feita aqui, conforme solicitado.
+// (conforme a documentação de integração da API recebida + rotas de
+// dispositivos já usadas em servicos.js):
+//   GET    /api/dispositivos/meus-servicos     -> lista os pedidos do cliente logado
+//   POST   /api/dispositivos/solicitar          -> cria um novo pedido/dispositivo
+//   DELETE /api/dispositivos/cancelar/:id        -> exclui um pedido
+//   GET    /usuario/perfil                       -> dados do usuário logado (já usada em inicio.js)
+//   POST   /api/usuarios/foto-perfil             -> atualiza a foto de perfil
+//   DELETE /api/usuarios/excluir-conta           -> exclui a conta do usuário
+// As rotas de foto de perfil, exclusão de conta, criação e exclusão de
+// pedido não constavam na documentação recebida e precisam existir no
+// backend para que este arquivo funcione. Nenhuma alteração de backend foi
+// feita aqui, conforme solicitado.
 // ==========================================================================
 
 const API_BASE = 'http://127.0.0.1:3000/api';
@@ -20,15 +25,131 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
 
     if (!token) {
-        exibirMensagem('Você precisa estar logado para ver seus pedidos.', true);
+        exibirMensagem('Você precisa estar logado para acessar sua conta.', true);
         window.location.href = 'login.html';
         return;
     }
 
+    carregarPerfil(token);
     carregarPedidos(token);
+    configurarFotoPerfil(token);
+    configurarExclusaoConta(token);
     configurarModalNovoPedido(token);
     configurarModalLaudo();
 });
+
+// ===================== PERFIL =====================
+
+async function carregarPerfil(token) {
+    try {
+        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!resposta.ok) {
+            console.warn('Não foi possível carregar o perfil do usuário.');
+            return;
+        }
+
+        const dados = await resposta.json();
+
+        document.getElementById('perfil-nome').textContent = dados.nome || '—';
+        document.getElementById('perfil-email').textContent = dados.email || '—';
+
+        if (dados.foto_perfil) {
+            document.getElementById('perfil-foto').src = dados.foto_perfil;
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+    }
+}
+
+function configurarFotoPerfil(token) {
+    const btnMudarFoto = document.getElementById('btn-mudar-foto');
+    const inputFoto = document.getElementById('input-foto-perfil');
+    const imgFoto = document.getElementById('perfil-foto');
+
+    btnMudarFoto.addEventListener('click', () => {
+        inputFoto.click();
+    });
+
+    inputFoto.addEventListener('change', async () => {
+        const arquivo = inputFoto.files[0];
+        if (!arquivo) return;
+
+        // Prévia imediata da imagem escolhida
+        const leitor = new FileReader();
+        leitor.onload = (evento) => {
+            imgFoto.src = evento.target.result;
+        };
+        leitor.readAsDataURL(arquivo);
+
+        const formData = new FormData();
+        formData.append('foto', arquivo);
+
+        try {
+            const resposta = await fetch(`${API_BASE}/usuarios/foto-perfil`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // Não definir Content-Type aqui: o navegador define o boundary do FormData automaticamente
+                },
+                body: formData
+            });
+
+            if (!resposta.ok) {
+                exibirMensagem('Não foi possível atualizar a foto de perfil.', true);
+                return;
+            }
+
+            exibirMensagem('Foto de perfil atualizada com sucesso!', false);
+
+        } catch (error) {
+            console.error('Erro ao atualizar foto de perfil:', error);
+            exibirMensagem('Erro de conexão ao atualizar a foto de perfil.', true);
+        }
+    });
+}
+
+function configurarExclusaoConta(token) {
+    const btnExcluir = document.getElementById('btn-excluir-conta');
+
+    btnExcluir.addEventListener('click', async () => {
+        const confirmar1 = confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.');
+        if (!confirmar1) return;
+
+        const confirmar2 = confirm('Confirmando: TODOS os seus dados e pedidos serão apagados permanentemente. Deseja continuar?');
+        if (!confirmar2) return;
+
+        try {
+            const resposta = await fetch(`${API_BASE}/usuarios/excluir-conta`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!resposta.ok) {
+                exibirMensagem('Não foi possível excluir sua conta. Tente novamente.', true);
+                return;
+            }
+
+            localStorage.removeItem('token');
+            alert('Sua conta foi excluída com sucesso.');
+            window.location.href = 'inicio.html';
+
+        } catch (error) {
+            console.error('Erro ao excluir conta:', error);
+            exibirMensagem('Erro de conexão ao excluir a conta.', true);
+        }
+    });
+}
 
 // ===================== CARREGAR / RENDERIZAR PEDIDOS =====================
 
@@ -84,39 +205,62 @@ function criarCardPedido(pedido, token) {
     const card = template.content.firstElementChild.cloneNode(true);
 
     const dispositivo = pedido.dispositivo || pedido.nome_dispositivo || 'Dispositivo não informado';
-    const descricao = pedido.descricao_item || pedido.descricao || '—';
+    const modelo = pedido.modelo || '—';
     const oQueFazer = pedido.o_que_fazer || pedido.servico_solicitado || '—';
     const prazo = pedido.prazo || '—';
     const estado = pedido.estado_dispositivo || '—';
 
     card.querySelector('.pedido-dispositivo').textContent = dispositivo;
-    card.querySelector('.pedido-descricao').textContent = descricao;
+    card.querySelector('.pedido-modelo').textContent = modelo;
     card.querySelector('.pedido-o-que-fazer').textContent = oQueFazer;
     card.querySelector('.pedido-prazo').textContent = prazo;
     card.querySelector('.pedido-estado').textContent = estado;
 
-    const { texto: statusTexto, concluido } = calcularStatus(pedido);
-    card.querySelector('.pedido-status').textContent = statusTexto;
-
     card.dataset.id = pedido.id;
 
-    const btnCancelar = card.querySelector('.btn-cancelar-pedido');
-    const btnVerLaudo = card.querySelector('.btn-ver-laudo');
+    const { percentual, texto, concluido } = calcularProgresso(pedido);
+    const barraPreenchida = card.querySelector('.pedido-progresso-barra-preenchida');
+    barraPreenchida.style.width = '0%';
+    // A barra também anima até o percentual real, depois que o card entra na tela
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            barraPreenchida.style.transition = 'width 0.8s ease';
+            barraPreenchida.style.width = `${percentual}%`;
+        }, 300);
+    });
+    card.querySelector('.pedido-progresso-texto').textContent = texto;
 
+    const btnExcluir = card.querySelector('.btn-excluir-item');
+    btnExcluir.addEventListener('click', () => {
+        excluirItem(pedido.id, token, card);
+    });
+
+    const btnVerLaudo = card.querySelector('.btn-ver-laudo');
     if (concluido) {
-        // Serviço concluído: mostra o botão de laudo e esconde o de cancelar
         btnVerLaudo.style.display = 'inline-block';
-        btnCancelar.style.display = 'none';
         btnVerLaudo.addEventListener('click', () => {
             abrirModalLaudo(pedido);
-        });
-    } else {
-        btnCancelar.addEventListener('click', () => {
-            cancelarPedido(pedido.id, token);
         });
     }
 
     return card;
+}
+
+// Calcula o percentual da barra de progresso e o texto do estado atual
+function calcularProgresso(pedido) {
+    const statusBruto = (pedido.status || '').toLowerCase();
+    const concluido = statusBruto.includes('conclu') || Boolean(pedido.laudo_tecnico);
+
+    if (concluido) {
+        return { percentual: 100, texto: '✅ Concluído', concluido: true };
+    }
+
+    if (statusBruto.includes('analise') || statusBruto.includes('análise') || pedido.nome_perito) {
+        const nomePerito = pedido.nome_perito ? ` — Perito: ${pedido.nome_perito}` : '';
+        return { percentual: 65, texto: `🔍 Em análise${nomePerito}`, concluido: false };
+    }
+
+    return { percentual: 25, texto: '⏳ Pedido enviado — aguardando alocação de um técnico', concluido: false };
 }
 
 // ===================== ANIMAÇÃO DE ENTRADA DOS CARDS =====================
@@ -137,32 +281,10 @@ function animarEntradaCard(card, container, indice) {
     }, indice * 120);
 }
 
-function calcularStatus(pedido) {
-    // Status explícito vindo do backend tem prioridade
-    const statusBruto = (pedido.status || '').toLowerCase();
+// ===================== EXCLUIR ITEM DA LISTA =====================
 
-    if (statusBruto.includes('conclu') || pedido.laudo_tecnico) {
-        return { texto: '✅ Concluído', concluido: true };
-    }
-
-    if (statusBruto.includes('analise') || statusBruto.includes('análise')) {
-        const nomePerito = pedido.nome_perito ? ` pelo Perito: ${pedido.nome_perito}` : '';
-        return { texto: `🔍 Em análise${nomePerito}`, concluido: false };
-    }
-
-    // Sem status explícito: usa a regra de nome_perito (igual ao comportamento
-    // já definido para a tela de acompanhamento do cliente)
-    if (!pedido.nome_perito) {
-        return { texto: '⏳ Em andamento — aguardando alocação de um técnico...', concluido: false };
-    }
-
-    return { texto: `🔍 Em análise pelo Perito: ${pedido.nome_perito}`, concluido: false };
-}
-
-// ===================== CANCELAR PEDIDO =====================
-
-async function cancelarPedido(id, token) {
-    const confirmar = confirm('Tem certeza que deseja cancelar/excluir este pedido?');
+async function excluirItem(id, token, card) {
+    const confirmar = confirm('Tem certeza que deseja excluir este item enviado?');
     if (!confirmar) return;
 
     try {
@@ -175,20 +297,31 @@ async function cancelarPedido(id, token) {
         });
 
         if (!resposta.ok) {
-            exibirMensagem('Não foi possível cancelar o pedido. Tente novamente.', true);
+            exibirMensagem('Não foi possível excluir o item. Tente novamente.', true);
             return;
         }
 
-        exibirMensagem('Pedido cancelado com sucesso.', false);
-        carregarPedidos(token);
+        // Anima a saída do card antes de removê-lo do DOM
+        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(24px)';
+        setTimeout(() => {
+            card.remove();
+            const container = document.getElementById('lista-pedidos-itens');
+            if (!container.children.length) {
+                document.getElementById('lista-pedidos-vazia').style.display = 'block';
+            }
+        }, 300);
+
+        exibirMensagem('Item excluído com sucesso.', false);
 
     } catch (error) {
-        console.error('Erro ao cancelar pedido:', error);
-        exibirMensagem('Erro de conexão ao cancelar o pedido.', true);
+        console.error('Erro ao excluir item:', error);
+        exibirMensagem('Erro de conexão ao excluir o item.', true);
     }
 }
 
-// ===================== MODAL: NOVO PEDIDO =====================
+// ===================== MODAL: NOVO DISPOSITIVO =====================
 
 function configurarModalNovoPedido(token) {
     const modal = document.getElementById('modal-novo-pedido');
@@ -213,7 +346,7 @@ function configurarModalNovoPedido(token) {
 
         const dados = {
             dispositivo: document.getElementById('input-dispositivo').value.trim(),
-            descricao_item: document.getElementById('input-descricao-item').value.trim(),
+            modelo: document.getElementById('input-modelo').value.trim(),
             o_que_fazer: document.getElementById('input-o-que-fazer').value.trim(),
             prazo: document.getElementById('input-prazo').value.trim(),
             estado_dispositivo: document.getElementById('input-estado-dispositivo').value
