@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { permitirCargos, verificarToken } from "../autenticacao";
+import { permitirCargos, verificarToken } from "../autenticacao.js";
 const router = Router();
-import { upload } from "../upload";
+import { upload } from "../upload.js";
 
 router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async (req, res) => {
     const userId = req.usuario.id;
@@ -27,7 +27,7 @@ router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async 
     }
 });
 
-router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['peritos'], upload.single('foto')), async (req, res) => {
+router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'], upload.single('foto')), async (req, res) => {
     const dispositivoId = req.params.id;
     const peritoId = req.usuario.id;
 
@@ -35,7 +35,7 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['peritos
 
     const query = `
         UPDATE dispositivos
-        SET perito_id = ?, status = 'em_analise'
+        SET perito_id = ?, status = 'em_analise', 'foto_evidencia' = ?
         WHERE id = ? AND perito_id IS NULL 
     `;
 
@@ -50,7 +50,7 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['peritos
 
         return res.json({
             mensagem: "Você assumiu o dispositivo com sucesso! O cliente já foi notificado no painel.",
-            url_foto: nomeFoto ? `http://localhost:3000/uploads/${nomeFoto}`: null
+            url_foto: nomeFoto ? `${req.protocol}://${req.get('host')}/uploads/${nomeFoto}` : null
         });
 
     } catch (error) {
@@ -269,6 +269,52 @@ router.put('/atualizar-rastreio/:id', verificarToken, permitirCargos(['cliente']
         return res.json({ mensagem: "Código de rastreamento atualizado com sucesso! A empresa acompanhará a entrega." });
     } catch (error) {
         console.error("Erro ao atualizar rastreio:", error);
+        return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
+router.put('/logistica/receber/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const dispositivoId = req.params.id;
+
+    const query = `
+        UPDATE dispositivos 
+        SET status = 'recebido_na_empresa' 
+        WHERE id = ? AND status = 'aguardando_envio'
+    `;
+
+    try {
+        const result = await executarQuery(query, [dispositivoId]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ erro: "Dispositivo não encontrado ou já passou da fase de recebimento." });
+        }
+        
+        return res.json({ mensagem: "Entrada confirmada! O dispositivo já está disponível na fila dos peritos." });
+    } catch (error) {
+        console.error("Erro no recebimento logístico:", error);
+        return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
+router.put('/logistica/devolver/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const dispositivoId = req.params.id;
+
+    const query = `
+        UPDATE dispositivos 
+        SET status = 'concluida' -- Ou 'devolvido', caso adicione esse status no banco
+        WHERE id = ? AND status = 'concluida'
+    `;
+
+    try {
+        const result = await executarQuery(query, [dispositivoId]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ erro: "Este dispositivo não está pronto para devolução (a perícia ainda não foi concluída)." });
+        }
+        
+        return res.json({ mensagem: "Devolução registrada com sucesso! Processo logístico encerrado." });
+    } catch (error) {
+        console.error("Erro na devolução logística:", error);
         return res.status(500).json({ erro: "Erro interno no servidor." });
     }
 });

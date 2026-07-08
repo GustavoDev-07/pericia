@@ -1,7 +1,11 @@
 import { Router } from "express";
 const router = Router();
 
-router.post('/feedback/:id', async (req, res) => {
+router.post('/enviar', async (req, res) => {
+
+    if (!nome || !email || !assunto || !mensagem) {
+        return res.status(400).json({ erro: "Todos os campos são obrigatórios." });
+    }
 
     var query = `
     INSERT INTO feedback(
@@ -24,17 +28,17 @@ router.post('/feedback/:id', async (req, res) => {
         req.body.mensagem
     ]
 
-    let resultado = await executarQuery(query, feedback);
 
     try {
-        res.send({
-            insertId: resultado[0].insertId
-        })
-    }
-    catch {
-        res.send({
-            insertId: null
-        })
+        let resultado = await executarQuery(query, feedback);
+
+        return res.status(201).json({
+            mensagem: "Feedback enviado com sucesso!",
+            insertId: resultado.insertId
+        });
+    } catch (error) {
+        console.error("Erro ao salvar feedback:", error);
+        return res.status(500).json({ erro: "Erro interno ao salvar feedback." });
     }
 })
 
