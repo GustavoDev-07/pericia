@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { permitirCargos, verificarToken } from "../autenticacao";
+import { permitirCargos, verificarToken } from "../autenticacao.js";
 const router = Router();
-import { upload } from "../upload";
+import { upload } from "../upload.js";
 
 router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async (req, res) => {
 
@@ -51,7 +51,7 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'
 
         return res.json({
             mensagem: "Você assumiu o dispositivo com sucesso! O cliente já foi notificado no painel.",
-            url_foto: nomeFoto ? `http://localhost:3000/uploads/${nomeFoto}`: null
+            url_foto: nomeFoto ? `${req.protocol}://${req.get('host')}/uploads/${nomeFoto}` : null
         });
 
     } catch (error) {
