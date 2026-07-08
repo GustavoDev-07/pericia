@@ -3,24 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Reaproveita o mesmo CSS/JS da navbar de inicio.html para manter a barra do topo idêntica -->
+    <link rel="stylesheet" href="../css/inicio.css">
     <link rel="stylesheet" href="../css/servicos.css">
+    <script src="../js/inicio.js"></script>
     <title>Serviços</title>
 </head>
-<body>
-    <a href="http://127.0.0.1:3000/frontend/html/inicio.html?vscode-livepreview=true"><button>Inico</button></a>
-    <h1>Recuperação dos itens solicitados:</h1>
+<body class="escuro">
 
-    <!-- Botão para abrir o formulário de novo pedido / novo dispositivo -->
-    <button id="btn-abrir-novo-pedido" type="button">+ Novo Pedido</button>
+    <!-- NAVBAR (igual à de inicio.html / contato.html) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">
+               <img src="../ico/logo.png" class="logo">
+            </div>
+            <div class="nav-title">
+                <span class="brand-name">Perícia Fiducia</span>
+                <span class="brand-sub">DIGITAL FORENSICS</span>
+            </div>
+        </div>
 
-    <!-- Mensagem de status geral (erros, avisos, sucesso) -->
-    <p id="mensagem-status"></p>
+        <ul class="nav-links">
+            <li><a href="inicio.html#inicio" class="nav-link">Início</a></li>
+            <li><a href="servicos.html" class="nav-link active">Serviços</a></li>
+            <li><a href="inicio.html#sobre" class="nav-link">Sobre Nós</a></li>
+            <li><a href="inicio.html#solucoes" class="nav-link">Soluções</a></li>
+            <li><a href="contato.html" class="nav-link">Contato</a></li>
+        </ul>
 
-    <!-- Lista dos pedidos feitos pelo cliente -->
-    <section id="lista-pedidos">
-        <p id="lista-pedidos-vazia" style="display:none;">Você ainda não fez nenhum pedido.</p>
-        <div id="lista-pedidos-itens"></div>
-    </section>
+        <div class="nav-actions">
+            <button class="btn-tema" onclick="alterar_tema()" title="Alternar tema" aria-label="Alternar tema">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+            </button>
+            <div id="area-usuario">
+                <a href="login.html"><button class="btn-login">Login</button></a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <h1>Recuperação dos itens solicitados:</h1>
+
+        <!-- Botão para abrir o formulário de novo pedido / novo dispositivo -->
+        <button id="btn-abrir-novo-pedido" type="button">+ Novo Pedido</button>
+
+        <!-- Mensagem de status geral (erros, avisos, sucesso) -->
+        <p id="mensagem-status"></p>
+
+        <!-- Lista dos pedidos feitos pelo cliente -->
+        <section id="lista-pedidos">
+            <p id="lista-pedidos-vazia" style="display:none;">Você ainda não fez nenhum pedido.</p>
+            <div id="lista-pedidos-itens"></div>
+        </section>
+    </main>
 
     <!-- ===================== MODAL: NOVO PEDIDO ===================== -->
     <div id="modal-novo-pedido" style="display:none;">

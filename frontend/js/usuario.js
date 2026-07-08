@@ -1,26 +1,22 @@
 // ==========================================================================
 // usuario.js
-// Lógica da tela "Minha Conta": perfil do usuário (foto, excluir conta) e
-// lista de pedidos/dispositivos enviados para perícia (adicionar, excluir
-// com confirmação, ver laudo quando concluído, barra de progresso do status).
+// Lógica da tela "Minha Conta": dados do perfil, troca de foto, exclusão de
+// conta, listagem dos pedidos do cliente com barra de progresso, exclusão
+// de item da lista e visualização do laudo técnico quando concluído.
 //
-// IMPORTANTE — nenhuma alteração de backend ou de CSS foi feita aqui.
-// Rotas usadas (algumas já existem no backend, outras são assumidas seguindo
-// exatamente o mesmo padrão já adotado em servicos.js):
-//
-//   GET    http://127.0.0.1:3000/usuario/perfil     -> dados do usuário logado
-//                                                      (já usado em inicio.js)
-//   GET    /api/dispositivos/meus-servicos          -> lista os pedidos do cliente (JÁ EXISTE)
-//   POST   /api/dispositivos/solicitar              -> cria um novo pedido/dispositivo
-//                                                      (mesma rota assumida em servicos.js)
-//   DELETE /api/dispositivos/cancelar/:id           -> exclui um pedido
-//                                                      (mesma rota assumida em servicos.js)
-//   GET    /api/dispositivos/dados-laudo/:id        -> retorna o laudo técnico (JÁ EXISTE,
-//                                                      só responde quando status = 'concluida')
-//   DELETE /api/auth/conta                          -> exclui a conta do usuário logado
-//                                                      (rota nova, precisa ser criada no backend)
-//   POST   /api/auth/foto-perfil (multipart "foto") -> atualiza a foto de perfil
-//                                                      (rota nova, precisa ser criada no backend)
+// IMPORTANTE: este arquivo assume que o backend expõe as seguintes rotas
+// (conforme a documentação de integração da API recebida + rotas de
+// dispositivos já usadas em servicos.js):
+//   GET    /api/dispositivos/meus-servicos     -> lista os pedidos do cliente logado
+//   POST   /api/dispositivos/solicitar          -> cria um novo pedido/dispositivo
+//   DELETE /api/dispositivos/cancelar/:id        -> exclui um pedido
+//   GET    /usuario/perfil                       -> dados do usuário logado (já usada em inicio.js)
+//   POST   /api/usuarios/foto-perfil             -> atualiza a foto de perfil
+//   DELETE /api/usuarios/excluir-conta           -> exclui a conta do usuário
+// As rotas de foto de perfil, exclusão de conta, criação e exclusão de
+// pedido não constavam na documentação recebida e precisam existir no
+// backend para que este arquivo funcione. Nenhuma alteração de backend foi
+// feita aqui, conforme solicitado.
 // ==========================================================================
 
 const API_BASE = 'http://127.0.0.1:3000/api';
@@ -36,14 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     carregarPerfil(token);
     carregarPedidos(token);
+    configurarFotoPerfil(token);
+    configurarExclusaoConta(token);
     configurarModalNovoPedido(token);
     configurarModalLaudo();
-    configurarFotoPerfil(token);
-    configurarExcluirConta(token);
-    configurarLogoutHeader();
 });
 
-// ===================== PERFIL DO USUÁRIO =====================
+// ===================== PERFIL =====================
 
 async function carregarPerfil(token) {
     try {
@@ -55,75 +50,54 @@ async function carregarPerfil(token) {
             }
         });
 
-        const dados = await resposta.json();
-
         if (!resposta.ok) {
             console.warn('Não foi possível carregar o perfil do usuário.');
             return;
         }
 
-        preencherPerfilNaTela(dados);
+        const dados = await resposta.json();
+
+        document.getElementById('perfil-nome').textContent = dados.nome || '—';
+        document.getElementById('perfil-email').textContent = dados.email || '—';
+
+        if (dados.foto_perfil) {
+            document.getElementById('perfil-foto').src = dados.foto_perfil;
+        }
 
     } catch (error) {
-        console.error('Erro ao buscar dados do perfil:', error);
+        console.error('Erro ao buscar perfil:', error);
     }
 }
-
-function preencherPerfilNaTela(dados) {
-    const nome = dados.nome || 'Usuário';
-    const email = dados.email || '—';
-    const iniciais = gerarIniciais(nome);
-
-    document.getElementById('perfil-nome').textContent = nome;
-    document.getElementById('perfil-email').textContent = email;
-    document.getElementById('header-nome-usuario').textContent = nome;
-
-    const imgPerfil = document.getElementById('perfil-foto-img');
-    const iniciaisPerfil = document.getElementById('perfil-avatar-iniciais');
-    const iniciaisHeader = document.getElementById('header-avatar-iniciais');
-
-    iniciaisHeader.textContent = iniciais;
-
-    if (dados.foto_perfil) {
-        imgPerfil.src = `http://127.0.0.1:3000/uploads/${dados.foto_perfil}`;
-        imgPerfil.style.display = 'inline-block';
-        iniciaisPerfil.style.display = 'none';
-    } else {
-        imgPerfil.style.display = 'none';
-        iniciaisPerfil.style.display = 'inline-block';
-        iniciaisPerfil.textContent = iniciais;
-    }
-}
-
-function gerarIniciais(nome) {
-    return nome
-        .split(' ')
-        .filter(Boolean)
-        .map(parte => parte[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2) || '?';
-}
-
-// ===================== MUDAR FOTO DE PERFIL =====================
 
 function configurarFotoPerfil(token) {
-    const input = document.getElementById('input-foto-perfil');
+    const btnMudarFoto = document.getElementById('btn-mudar-foto');
+    const inputFoto = document.getElementById('input-foto-perfil');
+    const imgFoto = document.getElementById('perfil-foto');
 
-    input.addEventListener('change', async () => {
-        const arquivo = input.files[0];
+    btnMudarFoto.addEventListener('click', () => {
+        inputFoto.click();
+    });
+
+    inputFoto.addEventListener('change', async () => {
+        const arquivo = inputFoto.files[0];
         if (!arquivo) return;
+
+        // Prévia imediata da imagem escolhida
+        const leitor = new FileReader();
+        leitor.onload = (evento) => {
+            imgFoto.src = evento.target.result;
+        };
+        leitor.readAsDataURL(arquivo);
 
         const formData = new FormData();
         formData.append('foto', arquivo);
 
         try {
-            const resposta = await fetch(`${API_BASE}/auth/foto-perfil`, {
+            const resposta = await fetch(`${API_BASE}/usuarios/foto-perfil`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
-                    // Content-Type não é definido manualmente: o navegador
-                    // gera o boundary correto do multipart/form-data.
+                    // Não definir Content-Type aqui: o navegador define o boundary do FormData automaticamente
                 },
                 body: formData
             });
@@ -134,28 +108,26 @@ function configurarFotoPerfil(token) {
             }
 
             exibirMensagem('Foto de perfil atualizada com sucesso!', false);
-            carregarPerfil(token);
 
         } catch (error) {
-            console.error('Erro ao enviar foto de perfil:', error);
-            exibirMensagem('Erro de conexão ao enviar a foto de perfil.', true);
-        } finally {
-            input.value = '';
+            console.error('Erro ao atualizar foto de perfil:', error);
+            exibirMensagem('Erro de conexão ao atualizar a foto de perfil.', true);
         }
     });
 }
 
-// ===================== EXCLUIR CONTA =====================
+function configurarExclusaoConta(token) {
+    const btnExcluir = document.getElementById('btn-excluir-conta');
 
-function configurarExcluirConta(token) {
-    const btn = document.getElementById('btn-excluir-conta');
+    btnExcluir.addEventListener('click', async () => {
+        const confirmar1 = confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.');
+        if (!confirmar1) return;
 
-    btn.addEventListener('click', async () => {
-        const confirmar = confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.');
-        if (!confirmar) return;
+        const confirmar2 = confirm('Confirmando: TODOS os seus dados e pedidos serão apagados permanentemente. Deseja continuar?');
+        if (!confirmar2) return;
 
         try {
-            const resposta = await fetch(`${API_BASE}/auth/conta`, {
+            const resposta = await fetch(`${API_BASE}/usuarios/excluir-conta`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -168,23 +140,14 @@ function configurarExcluirConta(token) {
                 return;
             }
 
-            alert('Conta excluída com sucesso.');
             localStorage.removeItem('token');
+            alert('Sua conta foi excluída com sucesso.');
             window.location.href = 'inicio.html';
 
         } catch (error) {
             console.error('Erro ao excluir conta:', error);
             exibirMensagem('Erro de conexão ao excluir a conta.', true);
         }
-    });
-}
-
-// ===================== LOGOUT (BARRA DE CIMA) =====================
-
-function configurarLogoutHeader() {
-    document.getElementById('btn-sair-header').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = 'inicio.html';
     });
 }
 
@@ -225,14 +188,10 @@ async function carregarPedidos(token) {
         vazio.style.display = 'none';
         container.innerHTML = '';
 
-        // Cada card entra na lista com uma pequena animação (feita 100% via JS,
-        // usando a Web Animations API — nenhum CSS foi criado ou alterado).
+        // Anima a entrada de cada card em sequência, um pouco depois do outro
         pedidos.forEach((pedido, indice) => {
             const card = criarCardPedido(pedido, token);
-            container.appendChild(card);
-
-            const artigo = container.querySelector(`[data-id="${pedido.id}"]`);
-            animarEntradaCard(artigo, indice);
+            animarEntradaCard(card, container, indice);
         });
 
     } catch (error) {
@@ -243,10 +202,10 @@ async function carregarPedidos(token) {
 
 function criarCardPedido(pedido, token) {
     const template = document.getElementById('template-pedido');
-    const card = template.content.cloneNode(true);
+    const card = template.content.firstElementChild.cloneNode(true);
 
-    const dispositivo = pedido.dispositivo || pedido.nome_dispositivo || pedido.tipo_dispositivo || 'Dispositivo não informado';
-    const modelo = pedido.modelo_dispositivo || pedido.modelo_descricao || pedido.modelo || '—';
+    const dispositivo = pedido.dispositivo || pedido.nome_dispositivo || 'Dispositivo não informado';
+    const modelo = pedido.modelo || '—';
     const oQueFazer = pedido.o_que_fazer || pedido.servico_solicitado || '—';
     const prazo = pedido.prazo || '—';
     const estado = pedido.estado_dispositivo || '—';
@@ -257,87 +216,112 @@ function criarCardPedido(pedido, token) {
     card.querySelector('.pedido-prazo').textContent = prazo;
     card.querySelector('.pedido-estado').textContent = estado;
 
-    const { texto: statusTexto, percent, concluido } = calcularStatusProgresso(pedido);
-    card.querySelector('.pedido-status-texto').textContent = statusTexto;
+    card.dataset.id = pedido.id;
 
-    const artigo = card.querySelector('.pedido-item');
-    artigo.dataset.id = pedido.id;
+    const { percentual, texto, concluido } = calcularProgresso(pedido);
+    const barraPreenchida = card.querySelector('.pedido-progresso-barra-preenchida');
+    barraPreenchida.style.width = '0%';
+    // A barra também anima até o percentual real, depois que o card entra na tela
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            barraPreenchida.style.transition = 'width 0.8s ease';
+            barraPreenchida.style.width = `${percentual}%`;
+        }, 300);
+    });
+    card.querySelector('.pedido-progresso-texto').textContent = texto;
 
-    // Barra de progresso do status do pedido (estrutura/estilo mínimo aplicado
-    // via JS, já que nenhum CSS foi criado para este elemento).
-    const barraFundo = card.querySelector('.barra-progresso-fundo');
-    const barraPreenchimento = card.querySelector('.barra-progresso-preenchimento');
-    estilizarBarraProgresso(barraFundo, barraPreenchimento, percent, concluido);
-
-    const btnExcluir = card.querySelector('.btn-excluir-pedido');
-    const btnVerLaudo = card.querySelector('.btn-ver-laudo');
-
+    const btnExcluir = card.querySelector('.btn-excluir-item');
     btnExcluir.addEventListener('click', () => {
-        excluirPedido(pedido.id, token, artigo);
+        excluirItem(pedido.id, token, card);
     });
 
-    // O laudo só aparece quando o serviço foi concluído e atualizado pelo perito.
+    const btnVerLaudo = card.querySelector('.btn-ver-laudo');
     if (concluido) {
         btnVerLaudo.style.display = 'inline-block';
         btnVerLaudo.addEventListener('click', () => {
-            abrirModalLaudo(pedido.id, token);
+            abrirModalLaudo(pedido);
         });
     }
 
     return card;
 }
 
-function calcularStatusProgresso(pedido) {
+// Calcula o percentual da barra de progresso e o texto do estado atual
+function calcularProgresso(pedido) {
     const statusBruto = (pedido.status || '').toLowerCase();
+    const concluido = statusBruto.includes('conclu') || Boolean(pedido.laudo_tecnico);
 
-    if (statusBruto.includes('conclu') || pedido.laudo_tecnico || pedido.laudo) {
-        return { texto: '✅ Concluído — laudo disponível', percent: 100, concluido: true };
+    if (concluido) {
+        return { percentual: 100, texto: '✅ Concluído', concluido: true };
     }
 
     if (statusBruto.includes('analise') || statusBruto.includes('análise') || pedido.nome_perito) {
-        const nomePerito = pedido.nome_perito ? ` pelo perito ${pedido.nome_perito}` : '';
-        return { texto: `🔍 Em análise${nomePerito}`, percent: 65, concluido: false };
+        const nomePerito = pedido.nome_perito ? ` — Perito: ${pedido.nome_perito}` : '';
+        return { percentual: 65, texto: `🔍 Em análise${nomePerito}`, concluido: false };
     }
 
-    return { texto: '⏳ Aguardando alocação de um perito...', percent: 25, concluido: false };
+    return { percentual: 25, texto: '⏳ Pedido enviado — aguardando alocação de um técnico', concluido: false };
 }
 
-// ===================== EXCLUIR PEDIDO (COM CONFIRMAÇÃO) =====================
+// ===================== ANIMAÇÃO DE ENTRADA DOS CARDS =====================
 
-function excluirPedido(id, token, elementoCard) {
-    const confirmar = confirm('Tem certeza que deseja excluir este dispositivo da lista de pedidos?');
+function animarEntradaCard(card, container, indice) {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(16px)';
+    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+
+    container.appendChild(card);
+
+    // Pequeno atraso entre cada item para dar efeito de "surgindo em sequência"
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        });
+    }, indice * 120);
+}
+
+// ===================== EXCLUIR ITEM DA LISTA =====================
+
+async function excluirItem(id, token, card) {
+    const confirmar = confirm('Tem certeza que deseja excluir este item enviado?');
     if (!confirmar) return;
 
-    (async () => {
-        try {
-            const resposta = await fetch(`${API_BASE}/dispositivos/cancelar/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!resposta.ok) {
-                exibirMensagem('Não foi possível excluir o pedido. Tente novamente.', true);
-                return;
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/cancelar/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
 
-            exibirMensagem('Pedido excluído com sucesso.', false);
-
-            // Anima a saída do card antes de removê-lo e recarregar a lista.
-            animarSaidaCard(elementoCard, () => {
-                carregarPedidos(token);
-            });
-
-        } catch (error) {
-            console.error('Erro ao excluir pedido:', error);
-            exibirMensagem('Erro de conexão ao excluir o pedido.', true);
+        if (!resposta.ok) {
+            exibirMensagem('Não foi possível excluir o item. Tente novamente.', true);
+            return;
         }
-    })();
+
+        // Anima a saída do card antes de removê-lo do DOM
+        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(24px)';
+        setTimeout(() => {
+            card.remove();
+            const container = document.getElementById('lista-pedidos-itens');
+            if (!container.children.length) {
+                document.getElementById('lista-pedidos-vazia').style.display = 'block';
+            }
+        }, 300);
+
+        exibirMensagem('Item excluído com sucesso.', false);
+
+    } catch (error) {
+        console.error('Erro ao excluir item:', error);
+        exibirMensagem('Erro de conexão ao excluir o item.', true);
+    }
 }
 
-// ===================== MODAL: NOVO PEDIDO / NOVO DISPOSITIVO =====================
+// ===================== MODAL: NOVO DISPOSITIVO =====================
 
 function configurarModalNovoPedido(token) {
     const modal = document.getElementById('modal-novo-pedido');
@@ -362,13 +346,13 @@ function configurarModalNovoPedido(token) {
 
         const dados = {
             dispositivo: document.getElementById('input-dispositivo').value.trim(),
-            modelo_dispositivo: document.getElementById('input-modelo-dispositivo').value.trim(),
+            modelo: document.getElementById('input-modelo').value.trim(),
             o_que_fazer: document.getElementById('input-o-que-fazer').value.trim(),
             prazo: document.getElementById('input-prazo').value.trim(),
             estado_dispositivo: document.getElementById('input-estado-dispositivo').value
         };
 
-        // Todas as informações são obrigatórias.
+        // Todas as informações são obrigatórias
         const campoFaltando = Object.values(dados).some(valor => !valor);
         if (campoFaltando) {
             erroForm.textContent = 'Todos os campos são obrigatórios. Preencha as informações do dispositivo.';
@@ -396,9 +380,17 @@ function configurarModalNovoPedido(token) {
                 return;
             }
 
+            const pedidoCriado = await resposta.json().catch(() => dados);
+
             modal.style.display = 'none';
             exibirMensagem('Pedido enviado com sucesso!', false);
-            carregarPedidos(token);
+
+            // Adiciona o novo card já com animação de entrada, sem precisar recarregar tudo
+            const vazio = document.getElementById('lista-pedidos-vazia');
+            vazio.style.display = 'none';
+            const container = document.getElementById('lista-pedidos-itens');
+            const card = criarCardPedido(pedidoCriado, token);
+            animarEntradaCard(card, container, 0);
 
         } catch (error) {
             console.error('Erro ao enviar pedido:', error);
@@ -421,128 +413,20 @@ function configurarModalLaudo() {
     });
 }
 
-async function abrirModalLaudo(dispositivoId, token) {
+function abrirModalLaudo(pedido) {
     const modal = document.getElementById('modal-laudo');
     const conteudo = document.getElementById('conteudo-laudo');
 
-    conteudo.innerHTML = '<p>Carregando laudo técnico...</p>';
+    const dispositivo = pedido.dispositivo || pedido.nome_dispositivo || 'Dispositivo';
+    const laudo = pedido.laudo_tecnico || 'Laudo técnico ainda não disponível.';
+
+    conteudo.innerHTML = `
+        <p><strong>Dispositivo:</strong> ${escapeHtml(dispositivo)}</p>
+        <p><strong>Laudo técnico:</strong></p>
+        <p>${escapeHtml(laudo)}</p>
+    `;
+
     modal.style.display = 'block';
-
-    try {
-        const resposta = await fetch(`${API_BASE}/dispositivos/dados-laudo/${dispositivoId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (resposta.status === 404) {
-            conteudo.innerHTML = '<p>O laudo ainda não está disponível. Ele só aparece aqui quando o perito concluir e atualizar o serviço.</p>';
-            return;
-        }
-
-        if (!resposta.ok) {
-            conteudo.innerHTML = '<p>Não foi possível carregar o laudo técnico. Tente novamente mais tarde.</p>';
-            return;
-        }
-
-        const dados = await resposta.json();
-
-        conteudo.innerHTML = `
-            <p><strong>Dispositivo:</strong> ${escapeHtml(dados.tipo_dispositivo || '—')}</p>
-            <p><strong>Modelo:</strong> ${escapeHtml(dados.modelo_descricao || '—')}</p>
-            <p><strong>Perito responsável:</strong> ${escapeHtml(dados.nome_perito || '—')}</p>
-            <p><strong>Data de entrada:</strong> ${escapeHtml(dados.data_entrada || '—')}</p>
-            <p><strong>Laudo técnico:</strong></p>
-            <p>${escapeHtml(dados.parecer_tecnico || 'Laudo técnico ainda não disponível.')}</p>
-        `;
-
-    } catch (error) {
-        console.error('Erro ao buscar laudo técnico:', error);
-        conteudo.innerHTML = '<p>Erro de conexão ao buscar o laudo técnico.</p>';
-    }
-}
-
-// ===================== ANIMAÇÕES (100% via JS — Web Animations API) =====================
-// Segue a mesma ideia de pedidos entrando na lista como em servicos.html,
-// mas implementada aqui inteiramente via JavaScript (sem tocar em nenhum CSS).
-
-function animarEntradaCard(elemento, indice) {
-    if (!elemento || !elemento.animate) return;
-
-    elemento.animate(
-        [
-            { opacity: 0, transform: 'translateY(18px) scale(0.98)' },
-            { opacity: 1, transform: 'translateY(0) scale(1)' }
-        ],
-        {
-            duration: 420,
-            delay: Math.min(indice, 6) * 60,
-            easing: 'cubic-bezier(.21,1.02,.73,1)',
-            fill: 'backwards'
-        }
-    );
-}
-
-function animarSaidaCard(elemento, aoFinalizar) {
-    if (!elemento || !elemento.animate) {
-        if (aoFinalizar) aoFinalizar();
-        return;
-    }
-
-    const animacao = elemento.animate(
-        [
-            { opacity: 1, transform: 'translateX(0)', maxHeight: `${elemento.offsetHeight}px` },
-            { opacity: 0, transform: 'translateX(24px)', maxHeight: '0px' }
-        ],
-        {
-            duration: 320,
-            easing: 'ease-in',
-            fill: 'forwards'
-        }
-    );
-
-    animacao.onfinish = () => {
-        if (aoFinalizar) aoFinalizar();
-    };
-}
-
-// Barra de progresso: como nenhum CSS existe para esse componente ainda,
-// aplicamos o mínimo de estilo em linha via JS só para o preenchimento
-// (a cor/altura) ficar visível, e animamos a largura com a Web Animations API.
-function estilizarBarraProgresso(fundoEl, preenchimentoEl, percent, concluido) {
-    if (!fundoEl || !preenchimentoEl) return;
-
-    fundoEl.style.width = '100%';
-    fundoEl.style.height = '10px';
-    fundoEl.style.borderRadius = '999px';
-    fundoEl.style.background = 'rgba(0,0,0,0.12)';
-    fundoEl.style.overflow = 'hidden';
-
-    preenchimentoEl.style.height = '100%';
-    preenchimentoEl.style.borderRadius = '999px';
-    preenchimentoEl.style.background = concluido ? '#2e9e4f' : '#c0392b';
-    preenchimentoEl.style.width = '0%';
-
-    if (preenchimentoEl.animate) {
-        const animacao = preenchimentoEl.animate(
-            [
-                { width: '0%' },
-                { width: `${percent}%` }
-            ],
-            {
-                duration: 700,
-                easing: 'ease-out',
-                fill: 'forwards'
-            }
-        );
-        animacao.onfinish = () => {
-            preenchimentoEl.style.width = `${percent}%`;
-        };
-    } else {
-        preenchimentoEl.style.width = `${percent}%`;
-    }
 }
 
 // ===================== UTILITÁRIOS =====================
@@ -563,4 +447,4 @@ function escapeHtml(texto) {
     const div = document.createElement('div');
     div.textContent = texto;
     return div.innerHTML;
-}   
+}
