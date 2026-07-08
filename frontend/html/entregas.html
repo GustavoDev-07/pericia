@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Reaproveita o mesmo CSS/JS da navbar de inicio.html para manter a barra do topo idêntica -->
+    <link rel="stylesheet" href="../css/inicio.css">
+    <link rel="stylesheet" href="../css/entregas.css">
+    <script src="../js/inicio.js"></script>
+    <title>Gestão de Entregas – Perícia Fiducia</title>
+</head>
+<body class="escuro">
+
+    <!-- NAVBAR (igual à de inicio.html / admin.html) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">
+               <img src="../ico/logo.png" class="logo">
+            </div>
+            <div class="nav-title">
+                <span class="brand-name">Perícia Fiducia</span>
+                <span class="brand-sub">DIGITAL FORENSICS</span>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="inicio.html#inicio" class="nav-link">Início</a></li>
+            <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+            <li><a href="inicio.html#sobre" class="nav-link">Sobre Nós</a></li>
+            <li><a href="inicio.html#solucoes" class="nav-link">Soluções</a></li>
+            <li><a href="contato.html" class="nav-link">Contato</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <button class="btn-tema" onclick="alterar_tema()" title="Alternar tema" aria-label="Alternar tema">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+            </button>
+            <div id="area-usuario">
+                <a href="login.html"><button class="btn-login">Login</button></a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="entregas-main">
+
+        <h1>Gestão de Entregas</h1>
+        <p>Confirme a entrega do dispositivo ao cliente após a perícia concluída, ou reverta uma entrega feita por engano. Toda ação aqui é validada com o servidor antes de ser aplicada.</p>
+
+        <!-- Mensagem de status geral (erros, avisos, sucesso) -->
+        <p id="mensagem-status"></p>
+
+        <!-- Exibido enquanto ainda não sabemos se o usuário tem permissão -->
+        <p id="entregas-verificando-permissao">Verificando suas permissões...</p>
+
+        <!-- Exibido caso o usuário logado não tenha permissão para gerenciar entregas -->
+        <div id="entregas-sem-permissao" style="display:none;">
+            <p>Você não tem permissão para confirmar ou reverter entregas de dispositivos. Fale com um administrador caso acredite que isso é um erro.</p>
+        </div>
+
+        <!-- Conteúdo da página: só é exibido depois de confirmar a permissão no servidor -->
+        <div id="entregas-conteudo" style="display:none;">
+
+            <!-- ===================== SEÇÃO PENDENTES DE ENTREGA ===================== -->
+            <section id="secao-pendentes-entrega">
+                <h2>Pendentes de Entrega</h2>
+                <p>Dispositivos com a perícia já concluída, aguardando a confirmação de entrega ao cliente.</p>
+
+                <div id="pendentes-entrega-filtros">
+                    <label for="filtro-busca-pendentes">Buscar:</label>
+                    <input type="text" id="filtro-busca-pendentes" placeholder="Cliente, tipo de dispositivo, ID...">
+                    <button type="button" id="btn-buscar-pendentes">Buscar</button>
+                    <button type="button" id="btn-atualizar-pendentes">Atualizar Lista</button>
+                </div>
+
+                <p id="pendentes-entrega-vazio" style="display:none;">Nenhum dispositivo aguardando entrega no momento.</p>
+                <table id="tabela-pendentes-entrega" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Modelo / Descrição</th>
+                            <th>Cliente</th>
+                            <th>Perito Responsável</th>
+                            <th>Perícia Concluída em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela-pendentes-entrega"></tbody>
+                </table>
+            </section>
+
+            <hr>
+
+            <!-- ===================== SEÇÃO JÁ ENTREGUES (REVERSÃO) ===================== -->
+            <section id="secao-ja-entregues">
+                <h2>Dispositivos Já Entregues</h2>
+                <p>Caso a entrega tenha sido confirmada por engano, é possível reverter o processo aqui. A reversão também fica registrada na auditoria.</p>
+
+                <div id="ja-entregues-filtros">
+                    <label for="filtro-busca-entregues">Buscar:</label>
+                    <input type="text" id="filtro-busca-entregues" placeholder="Cliente, tipo de dispositivo, ID...">
+                    <button type="button" id="btn-buscar-entregues">Buscar</button>
+                    <button type="button" id="btn-atualizar-entregues">Atualizar Lista</button>
+                </div>
+
+                <p id="ja-entregues-vazio" style="display:none;">Nenhum dispositivo entregue até o momento.</p>
+                <table id="tabela-ja-entregues" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Modelo / Descrição</th>
+                            <th>Cliente</th>
+                            <th>Entregue em</th>
+                            <th>Confirmado por</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela-ja-entregues"></tbody>
+                </table>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ===================== MODAL: CONFIRMAR ENTREGA ===================== -->
+    <div id="modal-confirmar-entrega" style="display:none;">
+        <div>
+            <button type="button" id="btn-fechar-confirmar-entrega">Fechar</button>
+            <h2>Confirmar Entrega ao Cliente</h2>
+            <p>
+                Você está prestes a confirmar a entrega do dispositivo
+                <strong id="confirmar-entrega-descricao">—</strong> ao cliente. Esta ação atualiza o status do
+                pedido e fica registrada na auditoria com o seu usuário e o horário.
+            </p>
+
+            <form id="form-confirmar-entrega">
+                <label for="input-responsavel-retirada">Nome de quem retirou o dispositivo:</label><br>
+                <input type="text" id="input-responsavel-retirada" name="responsavel_retirada"
+                       placeholder="Ex: o próprio cliente, um procurador..." required>
+
+                <label for="input-observacao-entrega">Observações (opcional):</label><br>
+                <textarea id="input-observacao-entrega" name="observacao"
+                          placeholder="Detalhes adicionais sobre a entrega, se necessário"></textarea>
+
+                <p id="erro-confirmar-entrega" style="display:none;"></p>
+
+                <button type="submit" id="btn-confirmar-entrega-definitivo">Confirmar Entrega</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: REVERTER ENTREGA ===================== -->
+    <div id="modal-reverter-entrega" style="display:none;">
+        <div>
+            <button type="button" id="btn-fechar-reverter-entrega">Fechar</button>
+            <h2>Reverter Entrega</h2>
+            <p>
+                Você está prestes a reverter a entrega do dispositivo
+                <strong id="reverter-entrega-descricao">—</strong>. O pedido voltará a aparecer como pendente de
+                entrega e o motivo informado abaixo será salvo na auditoria.
+            </p>
+
+            <form id="form-reverter-entrega">
+                <label for="input-motivo-reversao">Motivo da reversão:</label><br>
+                <textarea id="input-motivo-reversao" name="motivo_reversao"
+                          placeholder="Ex: entrega confirmada por engano, dispositivo errado..." required></textarea>
+
+                <p id="erro-reverter-entrega" style="display:none;"></p>
+
+                <button type="submit" id="btn-reverter-entrega-definitivo">Reverter Entrega</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/entregas.js"></script>
+</body>
+</html>

@@ -49,6 +49,8 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        await registrarLog(usuarioEncontrado.id, usuarioEncontrado.nome, "Login", "Usuário realizou login com sucesso.");
+
         return res.json({ 
             auth: true, 
             token, 
