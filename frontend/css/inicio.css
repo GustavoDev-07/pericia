@@ -718,13 +718,10 @@ body.claro .secao-titulo {
     margin-bottom: 20px;
 }
 
-<<<<<<< HEAD
-=======
 .card-img-placeholder {
    border-radius: 20px;
    
 }
->>>>>>> c1b9fa884d0bc3eb12f8193db6c084163dfb80f4
 
 .card-body h3 {
     font-family: var(--font-display);
