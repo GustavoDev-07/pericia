@@ -86,7 +86,7 @@ router.get('/meus-casos', verificarToken, permitirCargos(['perito']), async (req
         );
         return res.json(meusDispositivos);
     }catch (error) {
-        return res.json({erro: "Erro ao buscar seus casos."});
+        return res.status(500).json({erro: "Erro ao buscar seus casos."});
     }
 });
 

@@ -27,7 +27,7 @@ router.post('/enviar', async (req, res) => {
 
     
     try {
-        let resultado = await executarQuery(query, dadosFeedback);
+        let [resultado] = await executarQuery(query, dadosFeedback);
         return res.status(201).json({
             mensagem: "Feedback enviado com sucesso!",
             insertId: resultado.insertId || (resultado[0] && resultado[0].insertId)
