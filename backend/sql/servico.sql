@@ -2,14 +2,23 @@
 USE pericia;
 CREATE TABLE servico(
     id INT PRIMARY KEY AUTO_INCREMENT,
-    nome_produto VARCHAR(250) NOT NULL,
-    numero_identificacao CHAR (12) NOT NULL UNIQUE,
+    nomeProduto VARCHAR(250) NOT NULL,
+    numeroIdentificacao CHAR (12) NOT NULL UNIQUE,
     endereco VARCHAR(250)
    
 );
 SELECT
-    nome_produto,
-    numero_identificacao
+    nomeProduto,
+    numeroIdentificacao
     endereco
 FROM
     servico;
+    
+CREATE TABLE IF NOT EXISTS feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    assunto VARCHAR(255) NOT NULL,
+    mensagem TEXT NOT NULL,
+    criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
