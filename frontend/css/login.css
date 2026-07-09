@@ -249,7 +249,7 @@ body.escuro {
 }
 
 body.escuro .form-card {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 217, 208, 0.05);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(18, 220, 239, 0.784);
 }
  
 .form-title {
@@ -295,7 +295,7 @@ body.escuro .form-card {
 
 body.escuro .field-group input:focus {
     border-color: var(--clr-icon-color);
-    box-shadow: 0 0 0 3px rgba(0, 217, 208, 0.16);
+    box-shadow: 0 0 0 3px rgba(0, 217, 210, 0.24);
 }
  
 .field-group input::placeholder {
@@ -322,7 +322,7 @@ body.escuro .field-group input::placeholder {
     text-decoration: none;
     transition: color 0.2s;
 }
-.link-muted:hover { color: #555; }
+.link-muted:hover { color: #2b2a2a; }
  
 .remember {
     display: flex;
@@ -357,8 +357,9 @@ body.escuro .field-group input::placeholder {
 }
 
 body.escuro .btn-login {
-    background: linear-gradient(90deg, #091120 0%, #0e3b3a 45%, #00b3ab 100%);
+    background: linear-gradient(90deg, #101e38 0%, #0e3b3a 45%, #00b3ab 100%);
     box-shadow: 0 8px 24px rgba(0, 217, 208, 0.18);
+    border: 3px solid rgb(12, 67, 75);
 }
  
 .btn-login:hover {
