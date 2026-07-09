@@ -42,6 +42,7 @@
  
         <!-- LADO DIREITO -->
         <div class="right-panel">
+<<<<<<< HEAD
 
             <form class="form-card">
 
@@ -56,6 +57,21 @@
                 <div class="field-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" placeholder="Digite seu e-mail">
+                </div>
+
+                <div class="field-group">
+                    <label for="telefone">Telefone</label>
+                    <div id="telefone-wrapper" style="display:flex; gap:8px; align-items:center;">
+                        <select id="pais" style="flex:0 0 auto; padding:8px; border:1.5px solid var(--clr-border); border-radius:var(--radius); background:var(--clr-input-bg); font-family:'Nunito', sans-serif; font-size:0.9rem; color:#333; outline:none;">
+                            <option value="55" data-sigla="BR" selected>🇧🇷 +55</option>
+                            <option value="1" data-sigla="US">🇺🇸 +1</option>
+                            <option value="351" data-sigla="PT">🇵🇹 +351</option>
+                            <option value="54" data-sigla="AR">🇦🇷 +54</option>
+                            <option value="34" data-sigla="ES">🇪🇸 +34</option>
+                            <option value="44" data-sigla="GB">🇬🇧 +44</option>
+                        </select>
+                        <input type="tel" id="telefone" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric" style="flex:1;">
+                    </div>
                 </div>
 
                 <div class="field-group">
