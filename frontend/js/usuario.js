@@ -257,7 +257,7 @@ function calcularProgresso(pedido) {
 
     if (statusBruto.includes('analise') || statusBruto.includes('análise') || pedido.nome_perito) {
         const nomePerito = pedido.nome_perito ? ` — Perito: ${pedido.nome_perito}` : '';
-        return { percentual: 65, texto: `🔍 Em análise${nomePerito}`, concluido: false };
+        return { percentual: 65, texto: `📋 Pedido Aceito / Pedido Assumido — Em análise${nomePerito}`, concluido: false };
     }
 
     return { percentual: 25, texto: '⏳ Pedido enviado — aguardando alocação de um técnico', concluido: false };

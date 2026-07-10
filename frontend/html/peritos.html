@@ -3,9 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peritos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Reaproveita o mesmo CSS/JS da navbar de inicio.html para manter a barra do topo idêntica -->
+    <link rel="stylesheet" href="../css/inicio.css">
+    <link rel="stylesheet" href="../css/peritos.css">
+    <script src="../js/inicio.js"></script>
+    <title>Área do Perito – Perícia Fiducia</title>
 </head>
-<body>
-    
+<body class="escuro">
+
+    <!-- NAVBAR (igual à de inicio.html / admin.html) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">
+               <img src="../ico/logo.png" class="logo">
+            </div>
+            <div class="nav-title">
+                <span class="brand-name">Perícia Fiducia</span>
+                <span class="brand-sub">DIGITAL FORENSICS</span>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="inicio.html#inicio" class="nav-link">Início</a></li>
+            <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+            <li><a href="inicio.html#sobre" class="nav-link">Sobre Nós</a></li>
+            <li><a href="inicio.html#solucoes" class="nav-link">Soluções</a></li>
+            <li><a href="contato.html" class="nav-link">Contato</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <button class="btn-tema" onclick="alterar_tema()" title="Alternar tema" aria-label="Alternar tema">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+            </button>
+            <div id="area-usuario">
+                <a href="login.html"><button class="btn-login">Login</button></a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="peritos-main">
+
+        <h1>Área do Perito</h1>
+        <p>Aceite dispositivos enviados pelos clientes para perícia, acompanhe seus casos em andamento e registre o laudo técnico detalhado assim que concluir o trabalho.</p>
+
+        <!-- Mensagem de status geral (erros, avisos, sucesso) -->
+        <p id="mensagem-status"></p>
+
+        <!-- Exibido enquanto ainda não sabemos se o usuário tem permissão -->
+        <p id="peritos-verificando-permissao">Verificando suas permissões...</p>
+
+        <!-- Exibido caso o usuário logado não seja um perito -->
+        <div id="peritos-sem-permissao" style="display:none;">
+            <p>Você não tem permissão para acessar a área do perito. Esta página é restrita a usuários com o cargo de perito.</p>
+        </div>
+
+        <!-- Conteúdo da página: só é exibido depois de confirmar a permissão no servidor -->
+        <div id="peritos-conteudo" style="display:none;">
+
+            <!-- ===================== SEÇÃO DISPOSITIVOS DISPONÍVEIS ===================== -->
+            <section id="secao-disponiveis">
+                <h2>Dispositivos Disponíveis para Perícia</h2>
+                <p>Dispositivos já recebidos pela empresa e ainda sem perito responsável. Ao aceitar um dispositivo, ele passa a aparecer no painel do cliente como "Pedido Aceito" / "Pedido Assumido" e vai para a sua lista de casos em andamento.</p>
+
+                <button type="button" id="btn-atualizar-disponiveis">Atualizar Lista</button>
+
+                <p id="disponiveis-vazio" style="display:none;">Nenhum dispositivo disponível para perícia no momento.</p>
+                <table id="tabela-disponiveis" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Modelo / Descrição</th>
+                            <th>Forma de Entrega</th>
+                            <th>Código de Rastreio</th>
+                            <th>Data de Entrada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela-disponiveis"></tbody>
+                </table>
+            </section>
+
+            <hr>
+
+            <!-- ===================== SEÇÃO MEUS CASOS EM ANDAMENTO ===================== -->
+            <section id="secao-meus-casos">
+                <h2>Meus Casos em Andamento</h2>
+                <p>Dispositivos que você já assumiu e que ainda estão em análise. Quando finalizar o trabalho, registre abaixo o laudo com o máximo de detalhes possível — essas informações serão entregues ao cliente.</p>
+
+                <button type="button" id="btn-atualizar-meus-casos">Atualizar Lista</button>
+
+                <p id="meus-casos-vazio" style="display:none;">Você ainda não assumiu nenhum dispositivo.</p>
+                <table id="tabela-meus-casos" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Modelo / Descrição</th>
+                            <th>Data de Entrada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela-meus-casos"></tbody>
+                </table>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ===================== MODAL: ACEITAR DISPOSITIVO ===================== -->
+    <div id="modal-aceitar-dispositivo" style="display:none;">
+        <div>
+            <button type="button" id="btn-fechar-aceitar">Fechar</button>
+            <h2>Aceitar Dispositivo para Perícia</h2>
+            <p>
+                Você está prestes a assumir o dispositivo <strong id="aceitar-descricao">—</strong>.
+                Ao confirmar, o pedido passará a aparecer para o cliente como <strong>"Pedido Aceito" / "Pedido Assumido"</strong>
+                e você se tornará o responsável por esta perícia.
+            </p>
+
+            <form id="form-aceitar-dispositivo">
+                <label for="input-foto-evidencia">Foto de evidência do recebimento (opcional):</label><br>
+                <input type="file" id="input-foto-evidencia" name="foto" accept="image/*">
+
+                <p id="erro-aceitar-dispositivo" style="display:none;"></p>
+
+                <button type="submit" id="btn-aceitar-definitivo">Aceitar Dispositivo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: FINALIZAR PERÍCIA / LAUDO ===================== -->
+    <div id="modal-finalizar-pericia" style="display:none;">
+        <div>
+            <button type="button" id="btn-fechar-finalizar">Fechar</button>
+            <h2>Finalizar Perícia e Registrar Laudo</h2>
+            <p>
+                Descreva com o máximo de detalhes possível tudo o que foi feito no dispositivo
+                <strong id="finalizar-descricao">—</strong>. Estas informações irão compor o laudo técnico oficial
+                entregue ao cliente.
+            </p>
+
+            <form id="form-finalizar-pericia">
+                <label for="select-tipo-servico">Tipo de serviço realizado:</label><br>
+                <select id="select-tipo-servico" name="tipo_servico" required>
+                    <option value="">Selecione o tipo de serviço...</option>
+                    <option value="Clonagem">Clonagem</option>
+                    <option value="Análise">Análise</option>
+                    <option value="Recuperação">Recuperação</option>
+                </select>
+
+                <br><br>
+
+                <label for="textarea-parecer-tecnico">Descrição detalhada do procedimento realizado:</label><br>
+                <textarea id="textarea-parecer-tecnico" name="parecer_tecnico" rows="8"
+                    placeholder="Descreva detalhadamente tudo o que foi feito: ferramentas utilizadas, etapas do processo, dados encontrados/recuperados/clonados, dificuldades enfrentadas, resultado final, etc."
+                    required></textarea>
+
+                <p id="erro-finalizar-pericia" style="display:none;"></p>
+
+                <button type="submit" id="btn-finalizar-definitivo">Finalizar Perícia e Gerar Laudo</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/peritos.js"></script>
 </body>
 </html>
