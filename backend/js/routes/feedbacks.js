@@ -1,5 +1,6 @@
 import { Router } from "express";
 const router = Router();
+import executarQuery from "../db.js";
 
 router.post('/enviar', async (req, res) => {
     

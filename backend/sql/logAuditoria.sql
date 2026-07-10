@@ -1,3 +1,4 @@
+-- Active: 1775677760955@@127.0.0.1@3306@pericia
 USE pericia;
 CREATE TABLE IF NOT EXISTS logsAuditoria (
     id INT AUTO_INCREMENT PRIMARY KEY,

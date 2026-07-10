@@ -2,6 +2,7 @@ import { Router } from "express";
 import { permitirCargos, verificarToken } from "../autenticacao.js";
 const router = Router();
 import { upload } from "../upload.js";
+import executarQuery from "../db.js";
 
 router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async (req, res) => {
 
@@ -10,8 +11,8 @@ router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async 
     const query = `
         SELECT d.*, u.nome AS nome_perito 
         FROM dispositivos d
-        LEFT JOIN usuarios u ON d.perito_id = u.id
-        WHERE d.usuario_id = ?
+        LEFT JOIN usuarios u ON d.peritoId = u.id
+        WHERE d.usuarioId = ?
     `;
 
     try {
@@ -36,8 +37,8 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'
 
     const query = `
         UPDATE dispositivos
-        SET perito_id = ?, status = 'em_analise', foto_envidencia = ?
-        WHERE id = ? AND perito_id IS NULL 
+        SET peritoId = ?, status = 'emAnalise', fotoEvidencia = ?
+        WHERE id = ? AND peritoId IS NULL 
     `;
 
     try {
@@ -65,10 +66,10 @@ router.get('/disponiveis', verificarToken, permitirCargos(['perito', 'admin']), 
 
         const query = `
         SELECT * FROM dispositivos
-        WHERE perito_id IS NULL AND status = 'recebido_na_empresa'
+        WHERE peritoId IS NULL AND status = 'recebidoNaEmpresa'
         `;
-
-        const [dispositivosLivres] = await executarQuery(query)
+        const resultado = await executarQuery(query)
+        const dispositivosLivres = resultado && resultado[0] ? resultado[0] : [];
         return res.json(dispositivosLivres);
     }catch (error) {
         console.error("Erro ao buscar fila de peritos:", error)
@@ -81,7 +82,7 @@ router.get('/meus-casos', verificarToken, permitirCargos(['perito']), async (req
 
     try{
         const [meusDispositivos] = await executarQuery(
-            'SELECT * FROM dispositivos WHERE perito_id = ? AND status = "em_analise"',
+            'SELECT * FROM dispositivos WHERE peritoId = ? AND status = "emAnalise"',
             [peritoId]
         );
         return res.json(meusDispositivos);
@@ -102,7 +103,7 @@ router.put('/finalizar-pericia/:id', verificarToken, permitirCargos(['perito']),
     const query = `
         UPDATE dispositivos 
         SET laudo = ?, status = 'concluida' 
-        WHERE id = ? AND perito_id = ? AND status = 'em_analise'
+        WHERE id = ? AND peritoId = ? AND status = 'emAnalise'
     `;
 
     try {
@@ -124,17 +125,17 @@ router.get('/dados-laudo/:id', verificarToken, permitirCargos(['cliente', 'perit
 
     const query = `
         SELECT 
-            d.id AS dispositivo_id,
-            d.tipo_dispositivo,
-            d.modelo_descricao,
+            d.id AS dispositivoId,
+            d.tipoDispositivo,
+            d.modeloDescricao,
             d.status,
             d.laudo AS parecer_tecnico,
-            DATE_FORMAT(d.data_entrada, '%d/%m/%Y') AS data_entrada,
+            DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_entrada,
             u_cliente.nome AS nome_cliente,
             u_perito.nome AS nome_perito
         FROM dispositivos d
-        INNER JOIN usuarios u_cliente ON d.usuario_id = u_cliente.id
-        INNER JOIN usuarios u_perito ON d.perito_id = u_perito.id
+        INNER JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
+        INNER JOIN usuarios u_perito ON d.peritoId = u_perito.id
         WHERE d.id = ? AND d.status = 'concluida'
     `;
 
@@ -177,7 +178,7 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
             }
 
             const queryEndereco = `
-                INSERT INTO enderecos_devolucao (usuario_id, cep, logradouro, numero, complemento, bairro, cidade, estado)
+                INSERT INTO enderecos_devolucao (usuarioId, cep, logradouro, numero, complemento, bairro, cidade, estado)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
@@ -196,16 +197,16 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
         }
 
         const queryDispositivo = `
-            INSERT INTO dispositivos (usuario_id, tipo_dispositivo, modelo_descricao, forma_entrega, endereco_devolucao_id, status) 
+            INSERT INTO dispositivos (usuarioId, tipoDispositivo, modeloDescricao, formaEntrega, enderecoDevolucaoId, status) 
             VALUES (?, ?, ?, ?, ?, 'aguardando_envio')
         `;
         
         await executarQuery(queryDispositivo, [
-            usuarioId, 
-            tipoFormatado, 
-            modeloDescricao, 
-            formaFormatada, 
-            enderecoId
+            usuarioId || null, 
+            tipoFormatado || null, 
+            modeloDescricao || null, 
+            formaFormatada || null, 
+            enderecoId || null
         ]);
 
         return res.status(201).json({ 
@@ -252,7 +253,7 @@ router.put('/atualizar-rastreio/:id', verificarToken, permitirCargos(['cliente']
 
 router.put('/logistica/receber/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
     const dispositivoId = req.params.id;
-    const query = `UPDATE dispositivos SET status = 'recebido_na_empresa' WHERE id = ? AND status = 'aguardando_envio'`;
+    const query = `UPDATE dispositivos SET status = 'recebidoNaEmpresa' WHERE id = ? AND status = 'aguardandoEnvio'`;
 
     try {
         const result = await executarQuery(query, [dispositivoId]);

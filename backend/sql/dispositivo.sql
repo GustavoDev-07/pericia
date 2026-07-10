@@ -1,3 +1,4 @@
+USE pericia;
 CREATE TABLE IF NOT EXISTS dispositivos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuarioId INT NOT NULL,
@@ -8,7 +9,7 @@ CREATE TABLE IF NOT EXISTS dispositivos (
     enderecoDevolucaoId INT DEFAULT NULL,
     codigoRastreio VARCHAR(100) DEFAULT NULL,
     status ENUM('aguardandoEnvio', 'recebidoNaEmpresa', 'aguardandoPerito', 'emAnalise', 'concluida') DEFAULT 'aguardandoEnvio',
-    fotoEnvidencia VARCHAR(255) DEFAULT NULL,
+    fotoEvidencia VARCHAR(255) DEFAULT NULL,
     laudo TEXT DEFAULT NULL,
     dataEntrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuarioId) REFERENCES usuarios(id) ON DELETE CASCADE,
