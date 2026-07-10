@@ -1,0 +1,21 @@
+/* ============================================
+   peritos.css – Perícia Fiducia
+   peritos.html ainda não tem marcação/conteúdo definido,
+   então por enquanto só aplicamos o fundo/tipografia base
+   para já nascer consistente com o resto do site.
+   ============================================ */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: 'Nunito', sans-serif;
+    background:
+        radial-gradient(circle at 92% 8%, rgba(239, 78, 89, 0.10), transparent 26%),
+        #091120;
+    color: #eaf1ff;
+}

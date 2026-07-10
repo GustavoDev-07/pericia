@@ -1,0 +1,320 @@
+/* ============================================
+   servicos.css – Perícia Fiducia
+   Mesma identidade visual de login.css / admin.css
+   ============================================ */
+
+main {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+}
+
+main h1 {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--clr-white);
+    margin-bottom: 24px;
+}
+
+body.claro main h1 { color: var(--clr-dark-text); }
+
+/* ── Botão novo pedido ──────────────────────────── */
+#btn-abrir-novo-pedido {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, #101e38 0%, #0e3b3a 45%, #00b3ab 100%);
+    color: #fff;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-cyan);
+    transition: all var(--transition);
+    margin-bottom: 24px;
+}
+
+#btn-abrir-novo-pedido:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+/* ── Mensagem de status ─────────────────────────── */
+#mensagem-status {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+#mensagem-status:empty { display: none; }
+
+#mensagem-status.status-erro {
+    background: rgba(239, 78, 89, 0.10);
+    border: 1px solid rgba(239, 78, 89, 0.30);
+    color: var(--clr-red-soft);
+}
+#mensagem-status.status-sucesso {
+    background: var(--clr-cyan-soft);
+    border: 1px solid var(--clr-cyan-border);
+    color: var(--clr-cyan);
+}
+
+/* ── Lista de pedidos ────────────────────────────── */
+#lista-pedidos-vazia {
+    font-family: var(--font-body);
+    color: var(--clr-text-muted);
+    padding: 20px 0;
+}
+
+#lista-pedidos-itens {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.pedido-item {
+    background: var(--clr-panel-strong);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+}
+
+.pedido-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-cyan);
+}
+
+.pedido-dispositivo {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--clr-cyan);
+    margin-bottom: 4px;
+}
+
+.pedido-item p {
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--clr-text-soft);
+    line-height: 1.5;
+}
+
+.pedido-item p strong {
+    color: var(--clr-text);
+    font-weight: 700;
+}
+
+.pedido-status {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: rgba(247, 201, 72, 0.15);
+    color: var(--clr-gold);
+    margin-top: 4px;
+}
+
+.pedido-acoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.pedido-acoes button {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 9px 16px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-ver-laudo {
+    background: var(--clr-cyan-soft);
+    border: 1px solid var(--clr-cyan-border) !important;
+    color: var(--clr-cyan);
+}
+.btn-ver-laudo:hover { background: var(--clr-cyan-border); }
+
+.btn-cancelar-pedido {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--clr-red-deep) !important;
+    color: var(--clr-red-soft);
+}
+.btn-cancelar-pedido:hover { background: rgba(239, 78, 89, 0.10); }
+
+/* ============================================
+   MODAIS (novo pedido / laudo)
+   ============================================ */
+#modal-novo-pedido,
+#modal-laudo {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 10, 20, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#modal-novo-pedido > div,
+#modal-laudo > div {
+    background: var(--clr-panel-strong);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hero);
+    padding: 36px 34px;
+    width: 100%;
+    max-width: 540px;
+    position: relative;
+    font-family: var(--font-body);
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+#modal-novo-pedido h2,
+#modal-laudo h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--clr-white);
+    margin: 6px 0 18px;
+}
+
+body.claro #modal-novo-pedido h2,
+body.claro #modal-laudo h2 { color: var(--clr-dark-text); }
+
+#modal-laudo p { color: var(--clr-text-soft); margin-bottom: 16px; }
+
+#btn-fechar-novo-pedido,
+#btn-fechar-laudo {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--clr-red-deep);
+    color: var(--clr-red-soft);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+#btn-fechar-novo-pedido:hover,
+#btn-fechar-laudo:hover { background: rgba(239, 78, 89, 0.10); }
+
+#form-novo-pedido > div { margin-bottom: 16px; }
+
+#form-novo-pedido label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin-bottom: 6px;
+}
+
+#form-novo-pedido input,
+#form-novo-pedido textarea,
+#form-novo-pedido select {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--clr-text);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+body.claro #form-novo-pedido input,
+body.claro #form-novo-pedido textarea,
+body.claro #form-novo-pedido select {
+    background: #ffffff;
+    color: var(--clr-dark-text);
+}
+
+#form-novo-pedido input:focus,
+#form-novo-pedido textarea:focus,
+#form-novo-pedido select:focus {
+    border-color: var(--clr-cyan);
+    box-shadow: 0 0 0 3px rgba(0, 217, 208, 0.14);
+}
+
+#form-novo-pedido input::placeholder,
+#form-novo-pedido textarea::placeholder { color: var(--clr-text-muted); }
+
+#erro-form-pedido {
+    background: rgba(239, 78, 89, 0.10);
+    border: 1px solid rgba(239, 78, 89, 0.30);
+    color: var(--clr-red-soft);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+}
+
+#form-novo-pedido button[type="submit"] {
+    width: 100%;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, #101e38 0%, #0e3b3a 45%, #00b3ab 100%);
+    color: #fff;
+    padding: 13px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-cyan);
+    transition: all var(--transition);
+}
+
+#form-novo-pedido button[type="submit"]:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+#conteudo-laudo {
+    background: var(--clr-cyan-soft);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    color: var(--clr-text-soft);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+/* ============================================
+   RESPONSIVO
+   ============================================ */
+@media (max-width: 600px) {
+    main { padding: 32px 16px 64px; }
+    main h1 { font-size: 1.9rem; }
+    #modal-novo-pedido > div,
+    #modal-laudo > div { padding: 28px 22px; }
+}

@@ -19,24 +19,24 @@
 // feita aqui, conforme solicitado.
 // ==========================================================================
 
-const API_BASE = 'http://127.0.0.1:3000/api';
+// const API_BASE = 'http://127.0.0.1:3000/api';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
+// document.addEventListener('DOMContentLoaded', () => {
+//     const token = localStorage.getItem('token');
 
-    if (!token) {
-        exibirMensagem('Você precisa estar logado para acessar sua conta.', true);
-        window.location.href = 'login.html';
-        return;
-    }
+//     if (!token) {
+//         exibirMensagem('Você precisa estar logado para acessar sua conta.', true);
+//         window.location.href = 'login.html';
+//         return;
+//     }
 
-    carregarPerfil(token);
-    carregarPedidos(token);
-    configurarFotoPerfil(token);
-    configurarExclusaoConta(token);
-    configurarModalNovoPedido(token);
-    configurarModalLaudo();
-});
+//     carregarPerfil(token);
+//     carregarPedidos(token);
+//     configurarFotoPerfil(token);
+//     configurarExclusaoConta(token);
+//     configurarModalNovoPedido(token);
+//     configurarModalLaudo();
+// });
 
 // ===================== PERFIL =====================
 
