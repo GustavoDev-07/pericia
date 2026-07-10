@@ -1,0 +1,408 @@
+/* ============================================================
+   entregas.css - Gestao de Entregas - Pericia Fiducia
+   Reaproveita as variaveis de cor/tipografia definidas em inicio.css
+   ============================================================ */
+
+#entregas-main {
+    width: min(100%, var(--container));
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    min-height: calc(100vh - 76px);
+}
+
+#entregas-main > h1 {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--clr-text);
+    margin-bottom: 10px;
+}
+
+#entregas-main > p {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    max-width: 780px;
+    margin-bottom: 24px;
+}
+
+#mensagem-status {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin: 0 0 24px;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    display: none;
+}
+
+#mensagem-status:not(:empty) { display: block; }
+
+#entregas-verificando-permissao {
+    color: var(--clr-text-muted);
+    font-style: italic;
+    padding: 18px 0;
+}
+
+#entregas-sem-permissao {
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: var(--radius);
+    background: rgba(239, 78, 89, 0.08);
+    border: 1px solid rgba(239, 78, 89, 0.3);
+    color: var(--clr-red-soft);
+    font-weight: 600;
+}
+
+#entregas-conteudo section { margin-top: 8px; }
+
+#entregas-conteudo h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    margin-bottom: 6px;
+}
+
+#entregas-conteudo section > p {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    max-width: 780px;
+    margin-bottom: 20px;
+}
+
+#entregas-conteudo hr {
+    border: none;
+    border-top: 1px solid var(--clr-cyan-border);
+    margin: 44px 0;
+}
+
+/* ===== FILTROS ===== */
+#pendentes-entrega-filtros,
+#ja-entregues-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#pendentes-entrega-filtros label,
+#ja-entregues-filtros label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+}
+
+#pendentes-entrega-filtros input[type="text"],
+#ja-entregues-filtros input[type="text"] {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--clr-text);
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    outline: none;
+    min-width: 240px;
+    flex: 1;
+    transition: border-color var(--transition);
+}
+
+#pendentes-entrega-filtros input[type="text"]:focus,
+#ja-entregues-filtros input[type="text"]:focus { border-color: var(--clr-cyan); }
+
+#pendentes-entrega-filtros button,
+#ja-entregues-filtros button {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-cyan) 0%, #00a8a0 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+    white-space: nowrap;
+}
+
+#pendentes-entrega-filtros button:hover,
+#ja-entregues-filtros button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cyan);
+}
+
+#btn-atualizar-pendentes,
+#btn-atualizar-entregues {
+    background: transparent;
+    border: 1px solid var(--clr-cyan-border);
+    color: var(--clr-text-soft);
+}
+
+#btn-atualizar-pendentes:hover,
+#btn-atualizar-entregues:hover {
+    color: var(--clr-cyan);
+    border-color: var(--clr-cyan);
+    box-shadow: none;
+}
+
+#pendentes-entrega-vazio,
+#ja-entregues-vazio {
+    color: var(--clr-text-muted);
+    font-style: italic;
+    padding: 18px 0;
+}
+
+/* ===== TABELAS (compartilha visual das tabelas do admin) ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    box-shadow: var(--shadow-soft);
+}
+
+thead { background: rgba(0, 217, 208, 0.08); }
+body.claro thead { background: rgba(0, 150, 150, 0.08); }
+
+th {
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-text-soft);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--clr-cyan-border);
+}
+
+td {
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: var(--clr-text-soft);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+
+body.claro td { border-bottom-color: rgba(15, 27, 50, 0.06); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0, 217, 208, 0.04); }
+
+.disp-id { font-family: var(--font-display); font-weight: 700; color: var(--clr-cyan); }
+.disp-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ===== BOTOES DE ACAO NAS LINHAS ===== */
+button.btn-confirmar-entrega,
+[id^="btn-confirmar-entrega-"] {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, #16c26b 0%, #0f9e57 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: transform var(--transition), opacity var(--transition);
+}
+
+button.btn-reverter-entrega,
+[id^="btn-reverter-entrega-"] {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-red) 0%, var(--clr-red-deep) 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: transform var(--transition), opacity var(--transition);
+}
+
+.disp-acoes button:hover { transform: translateY(-2px); opacity: 0.92; }
+
+/* ===== MODAIS ===== */
+#modal-confirmar-entrega,
+#modal-reverter-entrega {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4, 9, 18, 0.7);
+    backdrop-filter: blur(4px);
+    padding: 20px;
+}
+
+#modal-confirmar-entrega > div,
+#modal-reverter-entrega > div {
+    position: relative;
+    width: min(100%, 520px);
+    background: var(--clr-panel-strong);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-hero);
+}
+
+#modal-confirmar-entrega h2,
+#modal-reverter-entrega h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--clr-text);
+    margin-bottom: 14px;
+    padding-right: 30px;
+}
+
+#modal-confirmar-entrega p,
+#modal-reverter-entrega p {
+    color: var(--clr-text-soft);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+#btn-fechar-confirmar-entrega,
+#btn-fechar-reverter-entrega {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--clr-cyan-border);
+    background: transparent;
+    color: var(--clr-text-soft);
+    font-size: 0;
+    cursor: pointer;
+}
+
+#btn-fechar-confirmar-entrega::before,
+#btn-fechar-reverter-entrega::before { content: '\2715'; font-size: 0.9rem; }
+
+#btn-fechar-confirmar-entrega:hover,
+#btn-fechar-reverter-entrega:hover { color: var(--clr-red-soft); border-color: var(--clr-red-soft); }
+
+/* ===== FORMULARIOS DENTRO DOS MODAIS ===== */
+#form-confirmar-entrega,
+#form-reverter-entrega {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+#form-confirmar-entrega label,
+#form-reverter-entrega label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+#form-confirmar-entrega input[type="text"],
+#form-confirmar-entrega textarea,
+#form-reverter-entrega textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--clr-text);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color var(--transition);
+}
+
+body.claro #form-confirmar-entrega input[type="text"],
+body.claro #form-confirmar-entrega textarea,
+body.claro #form-reverter-entrega textarea {
+    background: rgba(15, 27, 50, 0.03);
+}
+
+#form-confirmar-entrega input[type="text"]:focus,
+#form-confirmar-entrega textarea:focus,
+#form-reverter-entrega textarea:focus { border-color: var(--clr-cyan); }
+
+#form-confirmar-entrega textarea,
+#form-reverter-entrega textarea { min-height: 90px; }
+
+#erro-confirmar-entrega,
+#erro-reverter-entrega {
+    color: var(--clr-red-soft);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+#btn-confirmar-entrega-definitivo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, #16c26b 0%, #0f9e57 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 13px 0;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+#btn-reverter-entrega-definitivo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-red) 0%, #ff6b67 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 13px 0;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+#btn-confirmar-entrega-definitivo:hover,
+#btn-reverter-entrega-definitivo:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hero);
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+    #entregas-main { padding: 32px 16px 64px; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    tbody tr {
+        margin-bottom: 16px;
+        border: 1px solid var(--clr-cyan-border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+    td {
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+        padding-left: 46%;
+        min-height: 36px;
+    }
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 16px;
+        width: 40%;
+        font-weight: 700;
+        color: var(--clr-text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+}

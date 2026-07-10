@@ -14,21 +14,21 @@
 // alteração de backend foi feita aqui, conforme solicitado.
 // ==========================================================================
 
-const API_BASE = 'http://127.0.0.1:3000/api';
+// const API_BASE = 'http://127.0.0.1:3000/api';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
+// document.addEventListener('DOMContentLoaded', () => {
+//     const token = localStorage.getItem('token');
 
-    if (!token) {
-        exibirMensagem('Você precisa estar logado para ver seus pedidos.', true);
-        window.location.href = 'login.html';
-        return;
-    }
+//     if (!token) {
+//         exibirMensagem('Você precisa estar logado para ver seus pedidos.', true);
+//         window.location.href = 'login.html';
+//         return;
+//     }
 
-    carregarPedidos(token);
-    configurarModalNovoPedido(token);
-    configurarModalLaudo();
-});
+//     carregarPedidos(token);
+//     configurarModalNovoPedido(token);
+//     configurarModalLaudo();
+// });
 
 // ===================== CARREGAR / RENDERIZAR PEDIDOS =====================
 

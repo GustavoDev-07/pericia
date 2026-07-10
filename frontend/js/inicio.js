@@ -1,21 +1,18 @@
-// ===== TEMA CLARO/ESCURO =====
-// Gerenciamento de tema centralizado em tema.js (ver ../js/tema.js)
-// As funções alternar_tema() e alterar_tema() são expostas globalmente por ele.
+
 
 // ===== NAVEGAÇÃO ATIVA =====
 window.addEventListener('scroll', function() {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('section[id]');
-    
+
     let current = '';
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
         if (pageYOffset >= sectionTop - 200) {
             current = section.getAttribute('id');
         }
     });
-    
+
     navLinks.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href').includes(current)) {
@@ -31,13 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevBtn = document.querySelector('.dep-btn.prev');
     const nextBtn = document.querySelector('.dep-btn.next');
     const depoimentosDots = document.querySelector('.depoimentos-dots');
-    
-    if (!depoimentosTrack) return;
-    
+
+    if (!depoimentosTrack || depoimentoCards.length === 0) return;
+
     let currentIndex = 0;
     const cardWidth = depoimentoCards[0].offsetWidth;
     const gap = 20;
-    
+
     // Criar dots
     depoimentoCards.forEach((_, index) => {
         const dot = document.createElement('button');
@@ -46,35 +43,35 @@ document.addEventListener('DOMContentLoaded', function() {
         dot.addEventListener('click', () => goToSlide(index));
         depoimentosDots.appendChild(dot);
     });
-    
+
     function updateCarousel() {
         const offset = -(currentIndex * (cardWidth + gap));
         depoimentosTrack.style.transform = `translateX(${offset}px)`;
-        
+
         // Atualizar dots
         document.querySelectorAll('.dot-item').forEach((dot, index) => {
             dot.classList.toggle('active', index === currentIndex);
         });
     }
-    
+
     function goToSlide(index) {
         currentIndex = index;
         updateCarousel();
     }
-    
+
     function nextSlide() {
         currentIndex = (currentIndex + 1) % depoimentoCards.length;
         updateCarousel();
     }
-    
+
     function prevSlide() {
         currentIndex = (currentIndex - 1 + depoimentoCards.length) % depoimentoCards.length;
         updateCarousel();
     }
-    
-    prevBtn.addEventListener('click', prevSlide);
-    nextBtn.addEventListener('click', nextSlide);
-    
+
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+
     // Auto-scroll a cada 8 segundos
     setInterval(nextSlide, 8000);
 });
@@ -126,22 +123,23 @@ document.querySelectorAll('.btn-entendo').forEach(btn => {
 function setupMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
     const navBrand = document.querySelector('.nav-brand');
-    
+    if (!navLinks || !navBrand) return;
+
     // Criar botão de menu se não existir
     if (!document.querySelector('.menu-toggle')) {
         const menuToggle = document.createElement('button');
         menuToggle.className = 'menu-toggle';
         menuToggle.innerHTML = '☰';
         menuToggle.setAttribute('aria-label', 'Menu');
-        
+
         // Inserir após nav-brand
         navBrand.parentNode.insertBefore(menuToggle, navBrand.nextSibling);
-        
+
         menuToggle.addEventListener('click', function() {
             navLinks.classList.toggle('active');
         });
     }
-    
+
     // Fechar menu ao clicar em um link
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function() {
@@ -158,14 +156,15 @@ console.log('✓ Perícia Fiducia - Website carregado com sucesso!');
 console.log('✓ Tema: ' + (localStorage.getItem('tema') || 'escuro'));
 console.log('✓ Versão: 1.0.0');
 
+// ===== ÁREA DO USUÁRIO (login/logout) =====
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
 
-    if(token){
+    if (token) {
         carregarDadosUsuario(token);
-    }else {
+    } else {
         configurarModoVisitante();
-    };
+    }
 });
 
 async function carregarDadosUsuario(token) {
@@ -173,10 +172,13 @@ async function carregarDadosUsuario(token) {
         const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer ${token}',
+                // BUG CORRIGIDO: estava com aspas simples ('...') em vez de
+                // crase (`...`), então o token nunca era interpolado e o
+                // backend recebia literalmente "Bearer ${token}".
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
-        })
+        });
         const dados = await resposta.json();
 
         if (resposta.ok) {
@@ -184,12 +186,12 @@ async function carregarDadosUsuario(token) {
                 <span>Olá, ${dados.nome}!</span>
                 <button onclick="deslogarUsuario()">Sair</button>
             `;
-        } else{
+        } else {
             console.warn("Token Inválido ou Expirado!");
             localStorage.removeItem('token');
             configurarModoVisitante();
         }
-    }catch (error) {
+    } catch (error) {
         console.error("Erro ao buscar dados do perfil:", error);
         configurarModoVisitante();
     }

@@ -58,22 +58,22 @@
 //        nessa tabela.
 // ==========================================================================
 
-const API_BASE = 'http://127.0.0.1:3000/api';
+// const API_BASE = 'http://127.0.0.1:3000/api';
 
-let paginaAuditoriaAtual = 1;
-const LIMITE_AUDITORIA_POR_PAGINA = 20;
+// let paginaAuditoriaAtual = 1;
+// const LIMITE_AUDITORIA_POR_PAGINA = 20;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
+// document.addEventListener('DOMContentLoaded', () => {
+//     const token = localStorage.getItem('token');
 
-    if (!token) {
-        exibirMensagem('Você precisa estar logado como administrador para acessar esta página.', true);
-        window.location.href = 'login.html';
-        return;
-    }
+//     if (!token) {
+//         exibirMensagem('Você precisa estar logado como administrador para acessar esta página.', true);
+//         window.location.href = 'login.html';
+//         return;
+//     }
 
-    verificarPermissaoAdmin(token);
-});
+//     verificarPermissaoAdmin(token);
+// });
 
 // ===================== CONTROLE DE ACESSO =====================
 
