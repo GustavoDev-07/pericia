@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 
-const rotasUsuarios = require('./routes/usuarios.js')
-const rotasFeedbacks = require('./routes/feedbacks.js')
-const rotasDispositivos = require('./routes/dispositivos.js')
+import rotasUsuarios from './routes/usuarios.js'
+import rotasFeedbacks from './routes/feedbacks.js'
+import rotasDispositivos from './routes/dispositivos.js'
 
 const app = express();
 
@@ -15,6 +15,4 @@ app.use('/api/feedbacks', rotasFeedbacks);
 app.use('/api/dispositivos', rotasDispositivos);
 app.use('/uploads', express.static('uploads'));
 
-app.listen(3000, () => {
-    console.log("Servidor online em: http://localhost:3000")
-}); 
+export default app;

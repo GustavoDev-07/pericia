@@ -5,6 +5,7 @@ const router = Router();
 import { registrarLog } from "../log.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import executarQuery from '../db.js';
 // 
 // import express, { raw, Router } from 'express'
 // import cors from 'cors'
@@ -24,12 +25,12 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ mensagem: 'E-mail e senha são obrigatórios!' });
     }
 
-    const query = 'SELECT id, nome, email, senha FROM usuarios WHERE email = ?';
+    const query = 'SELECT id, nome, email, senha, role FROM usuarios WHERE email = ?';
 
     try {
         const resultado = await executarQuery(query, [email]);
 
-        const usuarios = await resultado[0]; 
+        const usuarios = resultado ? resultado[0] : []; 
 
         if (!usuarios || usuarios.length === 0) {
             return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
@@ -38,13 +39,18 @@ router.post('/login', async (req, res) => {
         const usuarioEncontrado = usuarios[0];
 
         const senhaCorreta = await bcrypt.compare(senha, usuarioEncontrado.senha);
+        console.log(senhaCorreta)
 
         if (!senhaCorreta) {
             return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
         }
 
         const token = jwt.sign(
-            { id: usuarioEncontrado.id, email: usuarioEncontrado.email }, 
+            {
+                id: usuarioEncontrado.id,
+                email: usuarioEncontrado.email,
+                role: usuarioEncontrado.role 
+            }, 
             'SEGREDO_SUPER_SECRETO', 
             { expiresIn: '1h' }
         );
@@ -118,7 +124,7 @@ router.post('/cadastro', async (req, res) => {
 router.put('/candidatar-perito', verificarToken, async (req, res) => {
     const idUsuario = req.usuario.id;
 
-    const query = "UPDATE usuarios SET status_aprovacao = 'pendente' WHERE id = ? AND role = 'cliente'";
+    const query = "UPDATE usuarios SET statusAprovacao = 'pendente' WHERE id = ? AND role = 'cliente'";
 
     try {
         await executarQuery(query, [idUsuario]);
@@ -143,7 +149,7 @@ router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async 
         );
 
         const [porTipo] = await executarQuery(
-            "SELECT tipo_dispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipo_dispositivo"
+            "SELECT tipoDispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipoDispositivo"
         );
 
         return res.json({
@@ -186,9 +192,9 @@ router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['ad
 router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
         const query = `
-            SELECT id, usuario_id AS usuarioId, usuario_nome AS usuarioNome, acao, detalhes, 
-                   DATE_FORMAT(criado_em, '%d/%m/%Y %H:%i') AS criadoEm 
-            FROM logs_auditoria ORDER BY id DESC LIMIT 100
+            SELECT id, usuarioId AS usuarioId, usuarioNome AS usuarioNome, acao, detalhes, 
+                   DATE_FORMAT(criadoEm, '%d/%m/%Y %H:%i') AS criadoEm 
+            FROM logsAuditoria ORDER BY id DESC LIMIT 100
         `;
         const [logs] = await executarQuery(query);
         return res.json(logs);
@@ -199,7 +205,7 @@ router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), a
 
 router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
-        const query = "SELECT id, nome, email, role AS cargoAtual, status_aprovacao AS statusAprovacao FROM usuarios WHERE status_aprovacao = 'pendente'";
+        const query = "SELECT id, nome, email, role AS cargoAtual, statusAprovacao AS statusAprovacao FROM usuarios WHERE statusAprovacao = 'pendente'";
         const [candidaturas] = await executarQuery(query);
         return res.json(candidaturas);
     } catch (error) {
@@ -222,11 +228,11 @@ router.put('/admin/auditoria/decidir-candidatura/:id', verificarToken, permitirC
         const nomeUsuarioAlvo = usuario[0].nome;
 
         if (acao.toLowerCase() === 'aprovar') {
-            await executarQuery("UPDATE usuarios SET role = ?, status_aprovacao = 'aprovado' WHERE id = ?", [cargoDesejado.toLowerCase(), usuarioAlvoId]);
+            await executarQuery("UPDATE usuarios SET role = ?, statusAprovacao = 'aprovado' WHERE id = ?", [cargoDesejado.toLowerCase(), usuarioAlvoId]);
             await registrarLog(adminId, adminNome, "Promoção de Cargo", `Aprovou ${nomeUsuarioAlvo} como ${cargoDesejado}.`);
             return res.json({ mensagem: `Usuário promovido a ${cargoDesejado} com sucesso!` });
         } else {
-            await executarQuery("UPDATE usuarios SET status_aprovacao = 'recusado' WHERE id = ?", [usuarioAlvoId]);
+            await executarQuery("UPDATE usuarios SET statusAprovacao = 'recusado' WHERE id = ?", [usuarioAlvoId]);
             await registrarLog(adminId, adminNome, "Candidatura Recusada", `Recusou o pedido de ${nomeUsuarioAlvo} para ${cargoDesejado}.`);
             return res.json({ mensagem: "Candidatura recusada com sucesso." });
         }
