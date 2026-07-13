@@ -1,5 +1,7 @@
 import express from 'express';
-const dirname = import.meta.dirname
+import path from 'path';
+
+const dirname = path.resolve(import.meta.dirname, '..')
 
 const app = express();
 
