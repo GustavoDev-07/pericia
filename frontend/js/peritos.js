@@ -39,7 +39,7 @@
 //   checagem de "role" no front já tenha liberado a tela.
 // ==========================================================================
 
-const API_BASE = 'http://127.0.0.1:3000/api';
+const API_BASE = 'https://pericia-backend.up.railway.app/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
@@ -59,7 +59,7 @@ async function verificarPermissaoPerito(token) {
     const verificando = document.getElementById('peritos-verificando-permissao');
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

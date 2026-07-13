@@ -29,7 +29,7 @@ async function cadastro_usuario(event) {
 
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/cadastro', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/cadastro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ async function loginUsuario(event) {
     };
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/login', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

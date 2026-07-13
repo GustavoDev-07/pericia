@@ -46,19 +46,19 @@
 //   checagem de "role" no front já tenha liberado o botão.
 // ==========================================================================
 
-// const API_BASE = 'http://127.0.0.1:3000/api';
+ const API_BASE = 'https://pericia-backend.up.railway.app/api';
 
-// document.addEventListener('DOMContentLoaded', () => {
-//     const token = localStorage.getItem('token');
+ document.addEventListener('DOMContentLoaded', () => {
+     const token = localStorage.getItem('token');
 
-//     if (!token) {
-//         exibirMensagem('Você precisa estar logado para acessar a gestão de entregas.', true);
-//         window.location.href = 'login.html';
-//         return;
-//     }
+     if (!token) {
+         exibirMensagem('Você precisa estar logado para acessar a gestão de entregas.', true);
+         window.location.href = 'login.html';
+         return;
+     }
 
-//     verificarPermissaoEntregas(token);
-// });
+     verificarPermissaoEntregas(token);
+ });
 
 // ===================== CONTROLE DE ACESSO =====================
 
@@ -66,7 +66,7 @@ async function verificarPermissaoEntregas(token) {
     const verificando = document.getElementById('entregas-verificando-permissao');
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
