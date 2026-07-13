@@ -6,6 +6,7 @@ const dirname = path.resolve(import.meta.dirname, '..')
 const app = express();
 
 app.use(express.static(dirname))
+app.use(express.static(path.join(dirname, 'html')))
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(dirname, 'html', 'inicio.html'))
