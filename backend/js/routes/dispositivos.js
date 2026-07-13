@@ -3,6 +3,15 @@ import { permitirCargos, verificarToken } from "../autenticacao.js";
 const router = Router();
 import { upload } from "../upload.js";
 import executarQuery from "../db.js";
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import rateLimit from 'express-rate-limit';
+
+const laudoLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
+    message: { erro: "Muitas tentativas feitas deste IP. Tente novamente em 15 minutos." }
+});
 
 router.get('/meus-servicos', verificarToken, permitirCargos(['cliente']), async (req, res) => {
 
@@ -160,11 +169,21 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
         tipoDispositivo, 
         modeloDescricao, 
         formaEntrega,
-        endereco 
+        endereco,
+        codigoLaudo 
     } = req.body;
 
     if (!tipoDispositivo || !modeloDescricao || !formaEntrega) {
         return res.status(400).json({ erro: "Campos obrigatórios ausentes." });
+    }
+
+    const anoAtual = new Date().getFullYear();
+    const caracteresAleatorios = crypto.randomBytes(2).toString('hex').toUpperCase();
+    const numeroProtocolo = `PRC-${anoAtual}-${caracteresAleatorios}`;
+
+    let codigoTextoPuro = codigoLaudo;
+    if (!codigoTextoPuro || String(codigoTextoPuro).trim() === '') {
+        codigoTextoPuro = crypto.randomInt(100000, 999999).toString();
     }
 
     const tipoFormatado = tipoDispositivo.toLowerCase();
@@ -172,33 +191,27 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
     let enderecoId = null;
 
     try {
+        const saltRounds = 10;
+        const hashCodigo = await bcrypt.hash(String(codigoTextoPuro), saltRounds);
+
         if (formaFormatada === 'correios') {
             if (!endereco || !endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
                 return res.status(400).json({ erro: "Para envio via Correios, o endereço de devolução completo é obrigatório." });
             }
-
             const queryEndereco = `
                 INSERT INTO enderecos_devolucao (usuarioId, cep, logradouro, numero, complemento, bairro, cidade, estado)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `;
-            
             const resultEndereco = await executarQuery(queryEndereco, [
-                usuarioId, 
-                endereco.cep, 
-                endereco.logradouro, 
-                endereco.numero, 
-                endereco.complemento || null, 
-                endereco.bairro, 
-                endereco.cidade, 
-                endereco.estado
+                usuarioId, endereco.cep, endereco.logradouro, endereco.numero, 
+                endereco.complemento || null, endereco.bairro, endereco.cidade, endereco.estado
             ]);
-
-            enderecoId = resultEndereco.insertId;
+            enderecoId = resultEndereco?.insertId || resultEndereco[0]?.insertId || null;
         }
 
         const queryDispositivo = `
-            INSERT INTO dispositivos (usuarioId, tipoDispositivo, modeloDescricao, formaEntrega, enderecoDevolucaoId, status) 
-            VALUES (?, ?, ?, ?, ?, 'aguardando_envio')
+            INSERT INTO dispositivos (usuarioId, tipoDispositivo, modeloDescricao, formaEntrega, enderecoDevolucaoId, status, protocolo, codigoAcessoLaudo) 
+            VALUES (?, ?, ?, ?, ?, 'aguardando_envio', ?, ?)
         `;
         
         await executarQuery(queryDispositivo, [
@@ -206,13 +219,19 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
             tipoFormatado || null, 
             modeloDescricao || null, 
             formaFormatada || null, 
-            enderecoId || null
+            enderecoId || null,
+            numeroProtocolo, 
+            hashCodigo       
         ]);
 
+        const mensagemBase = formaFormatada === 'correios' 
+            ? "Dispositivo registrado! Por favor, poste nos Correios e insira o código de rastreamento no painel."
+            : "Dispositivo registrado! Aguardamos a entrega no balcão da empresa.";
+
         return res.status(201).json({ 
-            mensagem: formaFormatada === 'correios' 
-                ? "Dispositivo registrado! Por favor, poste nos Correios e insira o código de rastreamento no painel."
-                : "Dispositivo registrado! Aguardamos a entrega no balcão da empresa."
+            mensagem: mensagemBase,
+            protocolo: numeroProtocolo, 
+            codigoAcesso: codigoTextoPuro 
         });
 
     } catch (error) {
@@ -274,6 +293,59 @@ router.put('/logistica/devolver/:id', verificarToken, permitirCargos(['logistica
         return res.json({ mensagem: "Devolução registrada com sucesso!" });
     } catch (error) {
         return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
+router.post('/dados-laudo/:protocolo/verificar-codigo', laudoLimiter, async (req, res) => {
+    const { protocolo } = req.params; 
+    const { codigo } = req.body;
+
+    if (!codigo) {
+        return res.status(400).json({ erro: "O código de acesso é obrigatório." });
+    }
+
+    try {
+        const queryDispositivo = "SELECT id, status, codigoAcessoLaudo FROM dispositivos WHERE protocolo = ?";
+        const resDispositivo = await executarQuery(queryDispositivo, [protocolo]);
+        const dispositivo = resDispositivo && resDispositivo[0] && resDispositivo[0][0] ? resDispositivo[0][0] : null;
+
+        if (!dispositivo) {
+            return res.status(404).json({ erro: "Protocolo de laudo não encontrado." });
+        }
+
+        if (dispositivo.status !== 'concluida') {
+            return res.status(403).json({ erro: "Este laudo ainda não foi finalizado e emitido pelo perito." });
+        }
+
+        const codigoValido = await bcrypt.compare(String(codigo), dispositivo.codigoAcessoLaudo);
+        if (!codigoValido) {
+            return res.status(401).json({ erro: "Código de acesso inválido para este protocolo." });
+        }
+
+        const queryLaudo = `
+            SELECT 
+                d.protocolo,
+                d.tipoDispositivo,
+                d.modeloDescricao,
+                d.status,
+                d.laudo AS parecer_tecnico,
+                DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_entrada,
+                u_cliente.nome AS nome_cliente,
+                u_perito.nome AS nome_perito
+            FROM dispositivos d
+            INNER JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
+            INNER JOIN usuarios u_perito ON d.peritoId = u_perito.id
+            WHERE d.id = ?
+        `;
+        
+        const resLaudo = await executarQuery(queryLaudo, [dispositivo.id]);
+        const dadosLaudo = resLaudo && resLaudo[0] ? resLaudo[0][0] : null;
+
+        return res.json(dadosLaudo);
+
+    } catch (error) {
+        console.error("Erro na verificação pública de laudo:", error);
+        return res.status(500).json({ erro: "Erro interno ao processar consulta." });
     }
 });
 

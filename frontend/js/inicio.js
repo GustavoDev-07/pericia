@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function carregarDadosUsuario(token) {
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/usuario/perfil', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
             method: 'GET',
             headers: {
                 // BUG CORRIGIDO: estava com aspas simples ('...') em vez de
