@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node --env-file=prd.env --watch ./js/server.js"
+    "start": "node --watch ./js/server.js"
   },
   "keywords": [],
   "author": "",
