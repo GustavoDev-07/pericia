@@ -1,4 +1,4 @@
--- Active: 1775677760955@@127.0.0.1@3306@pericia
+-- Active: 1770140835489@@127.0.0.1@3306@pericia
 USE pericia;
 
 DROP TABLE usuarios;

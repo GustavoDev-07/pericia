@@ -1,3 +1,4 @@
+-- Active: 1770140835489@@127.0.0.1@3306@pericia
 USE pericia;
 CREATE TABLE IF NOT EXISTS dispositivos (
     id INT AUTO_INCREMENT PRIMARY KEY,
