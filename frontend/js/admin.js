@@ -267,6 +267,9 @@ function criarCardCandidatura(candidato, token) {
     card.querySelector('.candidatura-email').textContent = candidato.email || '—';
 
     const selectCargo = card.querySelector('.select-cargo-candidatura');
+    if (candidato.cargoDesejado) {
+        selectCargo.value = candidato.cargoDesejado;
+    }
 
     card.querySelector('.btn-aprovar-perito').addEventListener('click', () => {
         decidirCandidatura(candidato.id, 'aprovar', token, card, selectCargo.value);

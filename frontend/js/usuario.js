@@ -372,4 +372,44 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarModalNovoPedido(token);
     configurarModalLaudo();
     configurarExcluirConta(token);
+    configurarCandidatura(token);
 });
+
+function configurarCandidatura(token) {
+    const btn = document.getElementById('btn-candidatar-se');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const cargoDesejado = document.getElementById('select-cargo-desejado').value;
+
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Enviando...';
+
+        try {
+            const resposta = await fetch(`${API_BASE}/auth/candidatar-perito`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cargoDesejado })
+            });
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok) {
+                mostrarMensagem(resultado.erro || 'Não foi possível enviar sua candidatura.', 'erro');
+                return;
+            }
+
+            mostrarMensagem(resultado.mensagem, 'sucesso');
+        } catch (erro) {
+            console.error('Erro ao enviar candidatura:', erro);
+            mostrarMensagem('Erro de conexão ao enviar candidatura.', 'erro');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+        }
+    });
+}
