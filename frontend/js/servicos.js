@@ -7,28 +7,25 @@
 // IMPORTANTE: este arquivo assume que o backend expõe as seguintes rotas
 // (conforme a documentação de integração da API recebida):
 //   GET    /api/dispositivos/meus-servicos        -> lista os pedidos do cliente logado
-//   POST   /api/dispositivos/solicitar             -> cria um novo pedido/dispositivo
-//   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido
-// As duas últimas (POST e DELETE) não constavam na documentação recebida e
-// precisam existir no backend para que este arquivo funcione. Nenhuma
-// alteração de backend foi feita aqui, conforme solicitado.
+//   POST   /api/dispositivos/cadastrar             -> cria um novo pedido/dispositivo (rota real do backend; era chamada como /solicitar por engano)
+//   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido (PRECISA CRIAR no backend)
 // ==========================================================================
 
-// const API_BASE = 'http://127.0.0.1:3000/api';
+const API_BASE = 'https://pericia-backend.up.railway.app/api';
 
-// document.addEventListener('DOMContentLoaded', () => {
-//     const token = localStorage.getItem('token');
+ document.addEventListener('DOMContentLoaded', () => {
+     const token = localStorage.getItem('token');
 
-//     if (!token) {
-//         exibirMensagem('Você precisa estar logado para ver seus pedidos.', true);
-//         window.location.href = 'login.html';
-//         return;
-//     }
+     if (!token) {
+         exibirMensagem('Você precisa estar logado para ver seus pedidos.', true);
+         window.location.href = 'login.html';
+        return;
+    }
 
-//     carregarPedidos(token);
-//     configurarModalNovoPedido(token);
-//     configurarModalLaudo();
-// });
+   carregarPedidos(token);
+     configurarModalNovoPedido(token);
+     configurarModalLaudo();
+ });
 
 // ===================== CARREGAR / RENDERIZAR PEDIDOS =====================
 
@@ -231,7 +228,7 @@ function configurarModalNovoPedido(token) {
         btnSubmit.disabled = true;
 
         try {
-            const resposta = await fetch(`${API_BASE}/dispositivos/solicitar`, {
+            const resposta = await fetch(`${API_BASE}/dispositivos/cadastrar`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -1,88 +1,80 @@
-// // usuario-ui.js
-// // Decorador do #area-usuario — NÃO altera nenhum JS existente.
-// // Observa quando inicio.js injeta o estado logado e reconstrói a UI
-// // com avatar estilo Google + dropdown flutuante.
+// ==========================================================================
+// backend/js/routes/usuarios-extra.js  (ARQUIVO NOVO)
+//
+// Resolve o item 2 do pedido: POST /api/usuarios/foto-perfil e
+// DELETE /api/usuarios/excluir-conta, chamadas por usuario.js no frontend.
+//
+// Por que um arquivo separado em vez de mexer em routes/usuarios.js:
+// o pedido é explícito em não tocar nesse arquivo porque outra pessoa está
+// mexendo nele em paralelo. Como o Express permite montar mais de um router
+// no mesmo prefixo, este arquivo pode ser registrado TAMBÉM em '/api/usuarios'
+// sem conflitar, desde que os sub-caminhos (/foto-perfil, /excluir-conta)
+// não colidam com o que já existe em usuarios.js. Confirmar com quem está
+// mexendo naquele arquivo que esses dois sub-caminhos estão livres antes de
+// registrar as duas rotas no server.
+//
+// Usa o upload.js já existente no projeto para lidar com o multipart/form-data
+// da foto — ajustar o caminho do import abaixo para o local real do arquivo.
+// ==========================================================================
 
-// (function () {
+import { Router } from 'express';
+import { verificarToken } from '../middlewares/verificarToken.js'; // ajustar caminho se necessário
+import { upload } from '../middlewares/upload.js'; // ajustar para o upload.js real do projeto
+import { pool } from '../db.js'; // ajustar para o módulo de conexão real do projeto
 
-//     function decorarAreaUsuario() {
-//         const area = document.getElementById('area-usuario');
-//         if (!area) return;
+const router = Router();
 
-//         const observer = new MutationObserver(function () {
-//             // inicio.js injeta <span>Olá, Nome!</span> + <button>Sair</button> quando logado
-//             const spanEl = area.querySelector('span');
-//             const btnSair = area.querySelector('button:not(.btn-login)');
+// POST /api/usuarios/foto-perfil
+// Recebe multipart/form-data com o campo "foto" (mesmo nome usado pelo
+// frontend em usuario.js: formData.append('foto', arquivo)).
+router.post('/foto-perfil', verificarToken, upload.single('foto'), async (req, res) => {
+    try {
+        const usuarioId = req.usuario?.id ?? req.usuarioId;
 
-//             if (spanEl && btnSair && !area.querySelector('.user-avatar-wrapper')) {
-//                 // Extrai o nome do span "Olá, Nome!"
-//                 const textoSpan = spanEl.textContent || '';
-//                 const nome = textoSpan.replace('Olá,', '').replace('!', '').trim();
+        if (!req.file) {
+            return res.status(400).json({ mensagem: 'Nenhuma foto enviada.' });
+        }
 
-//                 // Gera iniciais (até 2 letras)
-//                 const iniciais = nome
-//                     ? nome.split(' ').filter(Boolean).map(p => p[0]).join('').toUpperCase().slice(0, 2)
-//                     : '?';
+        // Ajustar conforme o que upload.js retorna (path local, URL do S3/Cloudinary, etc.)
+        const caminhoFoto = req.file.path ?? req.file.location ?? req.file.filename;
 
-//                 // Captura o onclick original do botão Sair
-//                 const onclickSair = btnSair.getAttribute('onclick') || 'deslogarUsuario()';
+        await pool.query(
+            'UPDATE usuarios SET foto_perfil = $1 WHERE id = $2',
+            [caminhoFoto, usuarioId]
+        );
 
-//                 // Reconstrói a área com avatar + dropdown
-//                 area.innerHTML = `
-//                     <div class="user-avatar-wrapper" tabindex="0" role="button" aria-haspopup="true" aria-label="Menu do usuário">
-//                         <div class="user-avatar">
-//                             <span class="user-avatar-iniciais">${iniciais}</span>
-//                         </div>
-//                         <div class="user-dropdown" role="menu">
-//                             <div class="user-dropdown-header">
-//                                 <span class="user-dropdown-name">${nome}</span>
-//                                 <span class="user-dropdown-label">Minha Conta</span>
-//                             </div>
-//                             <a href="meus-dispositivos.html" class="user-dropdown-item" role="menuitem">
-//                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-//                                     <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-//                                     <path d="M8 21h8M12 17v4"></path>
-//                                 </svg>
-//                                 Meus Dispositivos
-//                             </a>
-//                             <div class="user-dropdown-separator"></div>
-//                             <button class="user-dropdown-item danger" onclick="${onclickSair}" role="menuitem">
-//                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-//                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-//                                     <polyline points="16 17 21 12 16 7"></polyline>
-//                                     <line x1="21" y1="12" x2="9" y2="12"></line>
-//                                 </svg>
-//                                 Sair
-//                             </button>
-//                         </div>
-//                     </div>
-//                 `;
+        return res.json({ mensagem: 'Foto de perfil atualizada com sucesso!', foto_perfil: caminhoFoto });
 
-//                 // Fechar dropdown ao clicar fora
-//                 document.addEventListener('click', function (e) {
-//                     const wrapper = area.querySelector('.user-avatar-wrapper');
-//                     if (wrapper && !area.contains(e.target)) {
-//                         wrapper.blur();
-//                     }
-//                 });
+    } catch (error) {
+        console.error('Erro ao atualizar foto de perfil:', error);
+        return res.status(500).json({ mensagem: 'Erro interno ao atualizar a foto de perfil.' });
+    }
+});
 
-//                 // Suporte a teclado: Enter/Space abre, Escape fecha
-//                 const wrapper = area.querySelector('.user-avatar-wrapper');
-//                 if (wrapper) {
-//                     wrapper.addEventListener('keydown', function (e) {
-//                         if (e.key === 'Escape') wrapper.blur();
-//                     });
-//                 }
-//             }
-//         });
+// DELETE /api/usuarios/excluir-conta
+// Exclui a conta do usuário logado. O frontend já pede dupla confirmação
+// antes de chamar essa rota (ver usuario.js).
+router.delete('/excluir-conta', verificarToken, async (req, res) => {
+    try {
+        const usuarioId = req.usuario?.id ?? req.usuarioId;
 
-//         observer.observe(area, { childList: true, subtree: true });
-//     }
+        // Ajustar: se houver FK de dispositivos apontando para usuarios,
+        // decidir aqui a política (cascade no banco, ou apagar/anonimizar
+        // os pedidos do usuário antes de apagar o usuário).
+        await pool.query('DELETE FROM usuarios WHERE id = $1', [usuarioId]);
 
-//     if (document.readyState === 'loading') {
-//         document.addEventListener('DOMContentLoaded', decorarAreaUsuario);
-//     } else {
-//         decorarAreaUsuario();
-//     }
+        return res.json({ mensagem: 'Conta excluída com sucesso.' });
 
-// })();
+    } catch (error) {
+        console.error('Erro ao excluir conta:', error);
+        return res.status(500).json({ mensagem: 'Erro interno ao excluir a conta.' });
+    }
+});
+
+export default router;
+
+// No arquivo principal do servidor, registrar ADICIONALMENTE ao router que
+// já existe para usuarios.js (não substituir, os dois convivem no mesmo
+// prefixo):
+//   import usuariosExtraRoutes from './routes/usuarios-extra.js';
+//   app.use('/api/usuarios', usuariosExtraRoutes);
