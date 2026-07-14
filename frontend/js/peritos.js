@@ -187,11 +187,11 @@ function criarLinhaDisponivel(dispositivo, token) {
 
     linha.innerHTML = `
         <td>${dispositivo.id}</td>
-        <td>${escapeHtml(dispositivo.tipo_dispositivo || '—')}</td>
-        <td>${escapeHtml(dispositivo.modelo_descricao || '—')}</td>
-        <td>${escapeHtml(dispositivo.forma_entrega || '—')}</td>
-        <td>${escapeHtml(dispositivo.codigo_rastreio || '—')}</td>
-        <td>${formatarData(dispositivo.data_entrada)}</td>
+        <td>${escapeHtml(dispositivo.tipoDispositivo || '—')}</td>
+        <td>${escapeHtml(dispositivo.modeloDescricao || '—')}</td>
+        <td>${escapeHtml(dispositivo.formaEntrega || '—')}</td>
+        <td>${escapeHtml(dispositivo.codigoRastreio || '—')}</td>
+        <td>${formatarData(dispositivo.dataEntrada)}</td>
         <td></td>
     `;
 
@@ -240,7 +240,7 @@ function abrirModalAceitarDispositivo(dispositivo, token) {
     const erro = document.getElementById('erro-aceitar-dispositivo');
     const form = document.getElementById('form-aceitar-dispositivo');
 
-    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipo_dispositivo || 'dispositivo'} (${dispositivo.modelo_descricao || 'sem descrição'})`;
+    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipoDispositivo || 'dispositivo'} (${dispositivo.modeloDescricao || 'sem descrição'})`;
     erro.style.display = 'none';
     erro.textContent = '';
     form.reset();
@@ -360,9 +360,9 @@ function criarLinhaMeuCaso(dispositivo, token) {
 
     linha.innerHTML = `
         <td>${dispositivo.id}</td>
-        <td>${escapeHtml(dispositivo.tipo_dispositivo || '—')}</td>
-        <td>${escapeHtml(dispositivo.modelo_descricao || '—')}</td>
-        <td>${formatarData(dispositivo.data_entrada)}</td>
+        <td>${escapeHtml(dispositivo.tipoDispositivo || '—')}</td>
+        <td>${escapeHtml(dispositivo.modeloDescricao || '—')}</td>
+        <td>${formatarData(dispositivo.dataEntrada)}</td>
         <td></td>
     `;
 
@@ -411,7 +411,7 @@ function abrirModalFinalizarPericia(dispositivo, token) {
     const erro = document.getElementById('erro-finalizar-pericia');
     const form = document.getElementById('form-finalizar-pericia');
 
-    descricaoEl.textContent = `#${dispositivo.id} — ${dispositivo.tipo_dispositivo || 'dispositivo'} (${dispositivo.modelo_descricao || 'sem descrição'})`;
+    descricaoEl.textContent = `#${dispositivo.id} — ${dispositivo.tipoDispositivo || 'dispositivo'} (${dispositivo.modeloDescricao || 'sem descrição'})`;
     erro.style.display = 'none';
     erro.textContent = '';
     form.reset();
