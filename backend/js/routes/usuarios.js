@@ -69,6 +69,36 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// GET /api/auth/usuario/perfil -> retorna os dados do usuário logado
+// (nome, email, role, statusAprovacao), usados pelo frontend para exibir
+// o menu do usuário e liberar as abas correspondentes ao seu nível de acesso.
+router.get('/usuario/perfil', verificarToken, async (req, res) => {
+    const idUsuario = req.usuario.id;
+
+    const query = 'SELECT id, nome, email, role, statusAprovacao FROM usuarios WHERE id = ?';
+
+    try {
+        const [usuarios] = await executarQuery(query, [idUsuario]);
+
+        if (!usuarios || usuarios.length === 0) {
+            return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
+        }
+
+        const usuario = usuarios[0];
+
+        return res.json({
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email,
+            role: usuario.role,
+            statusAprovacao: usuario.statusAprovacao
+        });
+    } catch (erro) {
+        console.error('Erro ao buscar perfil do usuário:', erro);
+        return res.status(500).json({ mensagem: 'Erro interno ao buscar perfil.' });
+    }
+});
+
 router.post('/cadastro', async (req, res) => {
     // const{nome, email, data_nascimento, cpf_cnpj, senha, confirmacao_senha} = req.body;
 
