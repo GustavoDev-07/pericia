@@ -118,7 +118,7 @@ async function carregarPedidos(token) {
             if (btnVerLaudo) {
                 if (pedido.status === 'concluida') {
                     btnVerLaudo.style.display = '';
-                    btnVerLaudo.addEventListener('click', () => abrirLaudo(pedido.id, token));
+                    btnVerLaudo.addEventListener('click', () => abrirLaudoPdfDireto(pedido.id, token, btnVerLaudo));
                 } else {
                     btnVerLaudo.style.display = 'none';
                 }

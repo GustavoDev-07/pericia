@@ -269,6 +269,44 @@ function configurarModalNovoPedido(token) {
     });
 }
 
+// Chamado direto pelo clique em "Ver Laudo Técnico": abre o PDF do laudo
+// em uma nova aba, sem passar pelo modal de texto (modal-laudo). O modal e
+// abrirModalLaudo abaixo ficaram sem uso neste fluxo, mas foram mantidos
+// no arquivo caso o modal volte a ser usado em outro lugar.
+async function abrirLaudoPdfDireto(dispositivoId, token, botao) {
+    const textoOriginal = botao ? botao.textContent : null;
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = 'Gerando PDF...';
+    }
+
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/dados-laudo/${dispositivoId}/pdf`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!resposta.ok) {
+            exibirMensagem('Não foi possível gerar o PDF do laudo.', true);
+            return;
+        }
+
+        const blobPdf = await resposta.blob();
+        const urlPdf = URL.createObjectURL(blobPdf);
+        window.open(urlPdf, '_blank');
+        setTimeout(() => URL.revokeObjectURL(urlPdf), 60000);
+
+    } catch (erro) {
+        console.error('Erro ao baixar PDF do laudo:', erro);
+        exibirMensagem('Erro de conexão ao baixar o PDF do laudo.', true);
+    } finally {
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = textoOriginal;
+        }
+    }
+}
+
 // ===================== MODAL: LAUDO TÉCNICO =====================
 
 function configurarModalLaudo() {
