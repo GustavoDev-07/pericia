@@ -1,330 +1,260 @@
-import { Router } from 'express';
-import db from '../db.js'
-import { verificarToken, permitirCargos } from '../autenticacao.js';
-const router = Router();
-import { registrarLog } from "../log.js";
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-import executarQuery from '../db.js';
-// 
-// import express, { raw, Router } from 'express'
-// import cors from 'cors'
-// import jwt from 'jsonwebtoken'
-// import executarQuery from './db.js';
-// import bcrypt from 'bcrypt'
-
-// const app = express();
-
-// app.use(cors())
-// app.use(express.json());
-
-router.post('/login', async (req, res) => {
-    const { email, senha } = req.body;
-
-    if (!email || !senha) {
-        return res.status(400).json({ mensagem: 'E-mail e senha são obrigatórios!' });
-    }
-
-    const query = 'SELECT id, nome, email, senha, role FROM usuarios WHERE email = ?';
-
-    try {
-        const resultado = await executarQuery(query, [email]);
-
-        const usuarios = resultado ? resultado[0] : []; 
-
-        if (!usuarios || usuarios.length === 0) {
-            return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
-        }
-
-        const usuarioEncontrado = usuarios[0];
-
-        const senhaCorreta = await bcrypt.compare(senha, usuarioEncontrado.senha);
-        console.log(senhaCorreta)
-
-        if (!senhaCorreta) {
-            return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
-        }
-
-        const token = jwt.sign(
-            {
-                id: usuarioEncontrado.id,
-                email: usuarioEncontrado.email,
-                role: usuarioEncontrado.role 
-            }, 
-            'SEGREDO_SUPER_SECRETO', 
-            { expiresIn: '1h' }
-        );
-
-        await registrarLog(usuarioEncontrado.id, usuarioEncontrado.nome, "Login", "Usuário realizou login com sucesso.");
-
-        return res.json({ 
-            auth: true, 
-            token, 
-            usuario: { nome: usuarioEncontrado.nome, email: usuarioEncontrado.email } 
-        });
-
-    } catch (erro) {
-        console.error('Erro ao verificar login no banco:', erro);
-        return res.status(500).json({ mensagem: 'Erro interno no servidor ao tentar logar.' });
-    }
-});
-
-router.post('/cadastro', async (req, res) => {
-    // const{nome, email, data_nascimento, cpf_cnpj, senha, confirmacao_senha} = req.body;
-
-    var query = `
-        INSERT INTO usuarios(
-            nome,
-            email,
-            dataNascimento,
-            cpfCnpj,
-            senha
-        )VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-        )
-    `
-
-    
-    try {
-        const senhaOriginal = req.body.senha;
-        
-        const senhaCriptografada = await bcrypt.hash(senhaOriginal, 12);
-        
-        var usuario = [
-            req.body.nome,
-            req.body.email,
-            req.body.dataNascimento,
-            req.body.cpfCnpj,
-            senhaCriptografada
-        ];
-
-        let resultado = await executarQuery(query, usuario);
-        res.send({
-            insertId: resultado.insertId || (resultado[0] && resultado[0].insertId),
-            usuario: {
-                id: resultado.insertId,
-                nome: req.body.nome,
-                email: req.body.email
-            }
-        })
-    }
-    catch (erro) {
-        console.error("Erro ao cadastrar:", erro);
-        res.status(500).send({
-            insertId: null,
-            mensagem: "Erro ao salvar no banco de dados."
-        });
-    }
-});
-
-router.put('/candidatar-perito', verificarToken, async (req, res) => {
-    const idUsuario = req.usuario.id;
-
-    const query = "UPDATE usuarios SET statusAprovacao = 'pendente' WHERE id = ? AND role = 'cliente'";
-
-    try {
-        await executarQuery(query, [idUsuario]);
-        return res.json({ mensagem: "Sua candidatura a perito foi enviada! Aguarde o retorno."});
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro ao enviar candidatura." });
-    }
-});
-
-router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    try {
-        const [peritos] = await executarQuery(
-            "SELECT COUNT(*) AS total FROM usuarios WHERE role = 'perito'"
-        );
-
-        const [aguardando] = await executarQuery(
-            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'aguardando_perito'"
-        );
-
-        const [emAnalise] = await executarQuery(
-            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'em_analise'"
-        );
-
-        const [porTipo] = await executarQuery(
-            "SELECT tipoDispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipoDispositivo"
-        );
-
-        return res.json({
-            cards: {
-                total_peritos: peritos[0].total,
-                fila_espera: aguardando[0].total,
-                em_analise: emAnalise[0].total
-            },
-            grafico_tipos: porTipo
-        });
-
-    } catch (error) {
-        console.error("Erro ao gerar dashboard:", error);
-        return res.status(500).json({ erro: "Erro interno ao gerar dados do painel." });
-    }
-});
-
-router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    const dispositivoId = req.params.id;
-
-    const query = `
-        UPDATE dispositivos 
-        SET status = 'recebido_na_empresa' 
-        WHERE id = ? AND status = 'aguardando_envio'
-    `;
-
-    try {
-        const result = await executarQuery(query, [dispositivoId]);
-        
-        if (result.affectedRows === 0) {
-            return res.status(400).json({ erro: "Dispositivo não encontrado ou já recebido." });
-        }
-        
-        return res.json({ mensagem: "Dispositivo bipado e recebido com sucesso! Já está na fila dos peritos." });
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro interno no servidor." });
-    }
-});
-
-// GET /admin/dispositivos
-// Equivalente ao que o front chamava em /dispositivos/admin/todos, que não
-// existia em lugar nenhum do backend. Criada aqui (e não em dispositivos.js,
-// fora do escopo desta tarefa) para não bloquear o painel de admin.
-// Aceita filtro opcional por status via query string (?status=).
+// ==========================================================================
+// usuario.js — script real da página "Minha Conta" (usuario.html).
 //
-// PENDÊNCIA: não existe coluna "localizacao" na tabela "dispositivos" hoje.
-// Abaixo é derivado um valor aproximado a partir da coluna "status"
-// existente, só para a tela não ficar sem essa informação. O ideal é que
-// quem mexe em dispositivos.js/schema do banco crie a coluna de verdade.
-router.get('/admin/dispositivos', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    const { status } = req.query;
+// O arquivo anterior continha, por engano, uma cópia do roteador do
+// backend (routes/usuarios.js), com "import { Router } from 'express'" etc.
+// Isso quebrava a página inteira: o navegador não entende "import" em um
+// <script> comum, então o JS nunca chegava a rodar e nenhum dado aparecia.
+// ==========================================================================
 
-    let query = `
-        SELECT
-            d.id,
-            d.tipoDispositivo AS tipo_dispositivo,
-            d.modeloDescricao AS modelo_descricao,
-            d.status,
-            u_cliente.nome AS nome_cliente,
-            u_perito.nome AS nome_perito
-        FROM dispositivos d
-        LEFT JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
-        LEFT JOIN usuarios u_perito ON d.peritoId = u_perito.id
-    `;
-    const parametros = [];
+const API_BASE = 'https://pericia-backend.up.railway.app/api';
 
-    if (status) {
-        query += ' WHERE d.status = ?';
-        parametros.push(status);
-    }
+// Mapa de status -> (texto exibido, % da barra de progresso)
+const STATUS_PEDIDO = {
+    aguardandoEnvio:   { texto: 'Aguardando envio',        percentual: 15 },
+    recebidoNaEmpresa: { texto: 'Recebido na empresa',     percentual: 40 },
+    emAnalise:         { texto: 'Em análise pelo perito',  percentual: 65 },
+    concluida:         { texto: 'Perícia concluída',       percentual: 100 },
+    devolvida:         { texto: 'Devolvida ao cliente',    percentual: 100 }
+};
 
-    query += ' ORDER BY d.id DESC';
+function mostrarMensagem(texto, tipo = 'info') {
+    const msg = document.getElementById('mensagem-status');
+    if (!msg) return;
+    msg.textContent = texto;
+    msg.dataset.tipo = tipo;
+}
 
+// ===================== PERFIL =====================
+async function carregarPerfil(token) {
     try {
-        const [dispositivos] = await executarQuery(query, parametros);
+        const resposta = await fetch(`${API_BASE}/auth/usuario/perfil`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const dados = await resposta.json();
 
-        // Aproximação de "localizacao" a partir do "status" existente, até
-        // que a coluna real seja criada (ver PENDÊNCIA acima).
-        const comLocalizacao = dispositivos.map(d => ({
-            ...d,
-            localizacao: d.status === 'concluida' || d.status === 'recebido_na_empresa' || d.status === 'recebidoNaEmpresa'
-                ? 'empresa'
-                : 'com_cliente'
-        }));
-
-        return res.json(comLocalizacao);
-    } catch (error) {
-        console.error("Erro ao buscar dispositivos (admin):", error);
-        return res.status(500).json({ erro: "Erro interno ao buscar dispositivos." });
-    }
-});
-
-router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    const { tipo, busca, pagina, limite } = req.query;
-
-    const paginaAtual = Math.max(parseInt(pagina, 10) || 1, 1);
-    const limitePorPagina = Math.min(Math.max(parseInt(limite, 10) || 100, 1), 100);
-    const offset = (paginaAtual - 1) * limitePorPagina;
-
-    let query = `
-        SELECT id, usuarioId AS usuarioId, usuarioNome AS usuario_nome, acao AS tipo, detalhes AS descricao,
-               DATE_FORMAT(criadoEm, '%d/%m/%Y %H:%i') AS data_hora
-        FROM logsAuditoria
-    `;
-    const condicoes = [];
-    const parametros = [];
-
-    if (tipo) {
-        condicoes.push('acao = ?');
-        parametros.push(tipo);
-    }
-
-    if (busca) {
-        condicoes.push('(detalhes LIKE ? OR usuarioNome LIKE ?)');
-        parametros.push(`%${busca}%`, `%${busca}%`);
-    }
-
-    if (condicoes.length > 0) {
-        query += ' WHERE ' + condicoes.join(' AND ');
-    }
-
-    // Busca um item a mais que o limite para saber se "temMais" sem uma
-    // segunda query de COUNT.
-    query += ' ORDER BY id DESC LIMIT ? OFFSET ?';
-    parametros.push(limitePorPagina + 1, offset);
-
-    try {
-        const [logs] = await executarQuery(query, parametros);
-
-        const temMais = logs.length > limitePorPagina;
-        const eventos = temMais ? logs.slice(0, limitePorPagina) : logs;
-
-        return res.json({ eventos, temMais });
-    } catch (error) {
-        console.error("Erro ao buscar logs de auditoria:", error);
-        return res.status(500).json({ erro: "Erro ao buscar logs de auditoria." });
-    }
-});
-
-router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    try {
-        const query = "SELECT id, nome, email, role AS cargoAtual, statusAprovacao AS statusAprovacao FROM usuarios WHERE statusAprovacao = 'pendente'";
-        const [candidaturas] = await executarQuery(query);
-        return res.json(candidaturas);
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro ao buscar candidaturas." });
-    }
-});
-
-router.put('/admin/auditoria/decidir-candidatura/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
-    const usuarioAlvoId = req.params.id;
-    const adminNome = req.usuario.nome;
-    const adminId = req.usuario.id;
-    const { acao, cargoDesejado } = req.body;
-
-    if (!acao || !cargoDesejado) return res.status(400).json({ erro: "Campos obrigatórios ausentes." });
-
-    try {
-        const [usuario] = await executarQuery("SELECT nome FROM usuarios WHERE id = ?", [usuarioAlvoId]);
-        if (!usuario || usuario.length === 0) return res.status(404).json({ erro: "Usuário não encontrado." });
-        
-        const nomeUsuarioAlvo = usuario[0].nome;
-
-        if (acao.toLowerCase() === 'aprovar') {
-            await executarQuery("UPDATE usuarios SET role = ?, statusAprovacao = 'aprovado' WHERE id = ?", [cargoDesejado.toLowerCase(), usuarioAlvoId]);
-            await registrarLog(adminId, adminNome, "Promoção de Cargo", `Aprovou ${nomeUsuarioAlvo} como ${cargoDesejado}.`);
-            return res.json({ mensagem: `Usuário promovido a ${cargoDesejado} com sucesso!` });
-        } else {
-            await executarQuery("UPDATE usuarios SET statusAprovacao = 'recusado' WHERE id = ?", [usuarioAlvoId]);
-            await registrarLog(adminId, adminNome, "Candidatura Recusada", `Recusou o pedido de ${nomeUsuarioAlvo} para ${cargoDesejado}.`);
-            return res.json({ mensagem: "Candidatura recusada com sucesso." });
+        if (!resposta.ok) {
+            mostrarMensagem(dados.mensagem || 'Não foi possível carregar seu perfil.', 'erro');
+            return;
         }
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro interno do servidor." });
-    }
-});
 
-export default router;
+        const nomeEl = document.getElementById('perfil-nome');
+        const emailEl = document.getElementById('perfil-email');
+        if (nomeEl) nomeEl.textContent = dados.nome || '—';
+        if (emailEl) emailEl.textContent = dados.email || '—';
+
+        // Observação: a senha nunca é devolvida pelo backend (nem deveria
+        // ser), então não há como — e não é seguro — exibi-la aqui. Se for
+        // necessário oferecer troca de senha, isso deve ser um formulário
+        // separado (senha atual + nova senha) com uma rota própria no
+        // backend, e não um campo somente leitura mostrando a senha salva.
+    } catch (erro) {
+        console.error('Erro ao carregar perfil:', erro);
+        mostrarMensagem('Não foi possível conectar ao servidor para carregar seu perfil.', 'erro');
+    }
+}
+
+// ===================== MEUS PEDIDOS =====================
+async function carregarPedidos(token) {
+    const listaVazia = document.getElementById('lista-pedidos-vazia');
+    const listaItens = document.getElementById('lista-pedidos-itens');
+    const template = document.getElementById('template-pedido');
+    if (!listaItens || !template) return;
+
+    listaItens.innerHTML = '';
+
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/meus-servicos`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (resposta.status === 404) {
+            if (listaVazia) listaVazia.style.display = '';
+            return;
+        }
+
+        const pedidos = await resposta.json();
+
+        if (!resposta.ok) {
+            mostrarMensagem(pedidos.erro || pedidos.mensagem || 'Não foi possível carregar seus pedidos.', 'erro');
+            return;
+        }
+
+        if (!Array.isArray(pedidos) || pedidos.length === 0) {
+            if (listaVazia) listaVazia.style.display = '';
+            return;
+        }
+
+        if (listaVazia) listaVazia.style.display = 'none';
+
+        pedidos.forEach(pedido => {
+            const card = template.content.cloneNode(true);
+
+            card.querySelector('.pedido-dispositivo').textContent = pedido.tipoDispositivo || 'Dispositivo';
+            card.querySelector('.pedido-modelo').textContent = pedido.modeloDescricao || '—';
+            card.querySelector('.pedido-o-que-fazer').textContent = pedido.descricaoServico || pedido.o_que_fazer || '—';
+            card.querySelector('.pedido-prazo').textContent = pedido.prazo || '—';
+            card.querySelector('.pedido-estado').textContent = pedido.estadoDispositivo || '—';
+
+            const infoStatus = STATUS_PEDIDO[pedido.status] || { texto: pedido.status || 'Status desconhecido', percentual: 0 };
+            const barra = card.querySelector('.pedido-progresso-barra-preenchida');
+            const textoProgresso = card.querySelector('.pedido-progresso-texto');
+            if (barra) barra.style.width = `${infoStatus.percentual}%`;
+            if (textoProgresso) textoProgresso.textContent = infoStatus.texto;
+
+            const btnVerLaudo = card.querySelector('.btn-ver-laudo');
+            if (btnVerLaudo) {
+                if (pedido.status === 'concluida') {
+                    btnVerLaudo.style.display = '';
+                    btnVerLaudo.addEventListener('click', () => abrirLaudo(pedido.id, token));
+                } else {
+                    btnVerLaudo.style.display = 'none';
+                }
+            }
+
+            const btnExcluir = card.querySelector('.btn-excluir-item');
+            if (btnExcluir) {
+                btnExcluir.dataset.id = pedido.id;
+            }
+
+            listaItens.appendChild(card);
+        });
+    } catch (erro) {
+        console.error('Erro ao carregar pedidos:', erro);
+        mostrarMensagem('Não foi possível conectar ao servidor para carregar seus pedidos.', 'erro');
+    }
+}
+
+async function abrirLaudo(dispositivoId, token) {
+    const modal = document.getElementById('modal-laudo');
+    const conteudo = document.getElementById('conteudo-laudo');
+    if (!modal || !conteudo) return;
+
+    conteudo.textContent = 'Carregando laudo...';
+    modal.style.display = '';
+
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/dados-laudo/${dispositivoId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            conteudo.textContent = dados.erro || 'Não foi possível carregar o laudo.';
+            return;
+        }
+
+        conteudo.innerHTML = `
+            <p><strong>Dispositivo:</strong> ${dados.tipoDispositivo || '—'}</p>
+            <p><strong>Modelo:</strong> ${dados.modeloDescricao || '—'}</p>
+            <p><strong>Data de entrada:</strong> ${dados.data_entrada || '—'}</p>
+            <p><strong>Perito responsável:</strong> ${dados.nome_perito || '—'}</p>
+            <p><strong>Parecer técnico:</strong><br>${dados.parecer_tecnico || 'Sem parecer registrado.'}</p>
+        `;
+    } catch (erro) {
+        console.error('Erro ao buscar laudo:', erro);
+        conteudo.textContent = 'Não foi possível conectar ao servidor para carregar o laudo.';
+    }
+}
+
+// ===================== MODAL: NOVO PEDIDO =====================
+function configurarModalNovoPedido(token) {
+    const modal = document.getElementById('modal-novo-pedido');
+    const btnAbrir = document.getElementById('btn-abrir-novo-pedido');
+    const btnFechar = document.getElementById('btn-fechar-novo-pedido');
+    const form = document.getElementById('form-novo-pedido');
+    const erroForm = document.getElementById('erro-form-pedido');
+
+    if (btnAbrir && modal) {
+        btnAbrir.addEventListener('click', () => { modal.style.display = ''; });
+    }
+    if (btnFechar && modal) {
+        btnFechar.addEventListener('click', () => { modal.style.display = 'none'; });
+    }
+
+    if (!form) return;
+
+    form.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        if (erroForm) { erroForm.style.display = 'none'; erroForm.textContent = ''; }
+
+        const payload = {
+            tipoDispositivo: document.getElementById('input-dispositivo').value.trim(),
+            modeloDescricao: document.getElementById('input-modelo').value.trim(),
+            // ATENÇÃO: o backend (/api/dispositivos/cadastrar) exige também
+            // "formaEntrega" ('correios' ou 'balcao'), e se for 'correios'
+            // exige um objeto "endereco" completo. O formulário atual em
+            // usuario.html não tem esses campos — por ora enviamos 'balcao'
+            // fixo (entrega presencial). Se o cliente precisar da opção de
+            // envio pelos Correios, o formulário HTML precisa ganhar esses
+            // campos antes que essa parte funcione de verdade.
+            formaEntrega: 'balcao'
+        };
+
+        try {
+            const resposta = await fetch(`${API_BASE}/dispositivos/cadastrar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const resultado = await resposta.json();
+
+            if (!resposta.ok) {
+                if (erroForm) {
+                    erroForm.textContent = resultado.erro || 'Não foi possível registrar o pedido.';
+                    erroForm.style.display = '';
+                }
+                return;
+            }
+
+            mostrarMensagem(`Pedido registrado! Protocolo: ${resultado.protocolo}`, 'sucesso');
+            form.reset();
+            if (modal) modal.style.display = 'none';
+            carregarPedidos(token);
+        } catch (erro) {
+            console.error('Erro ao cadastrar pedido:', erro);
+            if (erroForm) {
+                erroForm.textContent = 'Não foi possível conectar ao servidor.';
+                erroForm.style.display = '';
+            }
+        }
+    });
+}
+
+function configurarModalLaudo() {
+    const modal = document.getElementById('modal-laudo');
+    const btnFechar = document.getElementById('btn-fechar-laudo');
+    if (btnFechar && modal) {
+        btnFechar.addEventListener('click', () => { modal.style.display = 'none'; });
+    }
+}
+
+// ===================== INICIALIZAÇÃO =====================
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    carregarPerfil(token);
+    carregarPedidos(token);
+    configurarModalNovoPedido(token);
+    configurarModalLaudo();
+});
