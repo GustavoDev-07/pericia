@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function verificarPermissaoAdmin(token) {
     try {
-        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
+        const resposta = await fetch(`${API_BASE}/auth/usuario/perfil`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
