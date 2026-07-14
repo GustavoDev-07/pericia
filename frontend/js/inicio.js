@@ -1,3 +1,5 @@
+
+
 // ===== NAVEGAÇÃO ATIVA =====
 window.addEventListener('scroll', function() {
     const navLinks = document.querySelectorAll('.nav-link');
@@ -165,13 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// GET /api/usuario/perfil -> dados do usuário logado (PRECISA CRIAR no
-// backend). Antes era chamada sem o prefixo /api, direto na raiz do domínio.
-const API_BASE = 'https://pericia-backend.up.railway.app/api';
-
 async function carregarDadosUsuario(token) {
     try {
-        const resposta = await fetch(`${API_BASE}/usuario/perfil`, {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
             method: 'GET',
             headers: {
                 // BUG CORRIGIDO: estava com aspas simples ('...') em vez de

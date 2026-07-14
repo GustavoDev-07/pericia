@@ -7,8 +7,11 @@
 // IMPORTANTE: este arquivo assume que o backend expõe as seguintes rotas
 // (conforme a documentação de integração da API recebida):
 //   GET    /api/dispositivos/meus-servicos        -> lista os pedidos do cliente logado
-//   POST   /api/dispositivos/cadastrar             -> cria um novo pedido/dispositivo (rota real do backend; era chamada como /solicitar por engano)
-//   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido (PRECISA CRIAR no backend)
+//   POST   /api/dispositivos/solicitar             -> cria um novo pedido/dispositivo
+//   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido
+// As duas últimas (POST e DELETE) não constavam na documentação recebida e
+// precisam existir no backend para que este arquivo funcione. Nenhuma
+// alteração de backend foi feita aqui, conforme solicitado.
 // ==========================================================================
 
 const API_BASE = 'https://pericia-backend.up.railway.app/api';
@@ -228,7 +231,7 @@ function configurarModalNovoPedido(token) {
         btnSubmit.disabled = true;
 
         try {
-            const resposta = await fetch(`${API_BASE}/dispositivos/cadastrar`, {
+            const resposta = await fetch(`${API_BASE}/dispositivos/solicitar`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
