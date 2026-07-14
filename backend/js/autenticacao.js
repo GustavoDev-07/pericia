@@ -1,14 +1,14 @@
 import jwt from 'jsonwebtoken';
 
 export function verificarToken(req, res, next) {
-    const authHeader = req.headears['authorization'];
+    const authHeader = req.headers?.['authorization'] || req.headers?.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({mensagem: "Acesso negado. Token não fornecido."})
     }
 
-    jwt.verify(token, 'SEGREDO', (error, usuarioDecodificado) => {
+    jwt.verify(token, 'SEGREDO_SUPER_SECRETO', (error, usuarioDecodificado) => {
         if (error) {
             return res.status(403).json({mensagem: "Token inválido ou expirado."});
         }

@@ -1,182 +1,182 @@
 // // ── Injeta CSS de extras automaticamente ────
-// (function injectCSS() {
-//   const link = document.createElement('link');
-//   link.rel = 'stylesheet';
-//   // link.href = '../css/form-extras.css';
-//   document.head.appendChild(link);
-// })();
+(function injectCSS() {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  // link.href = '../css/form-extras.css';
+  document.head.appendChild(link);
+})();
 
 // // ── Botão "Voltar ao Início" ────────────────
-// (function injectBackButton() {
-//   const leftPanel = document.querySelector('.left-panel');
-//   if (!leftPanel) return;
-//   const btn = document.createElement('a');
-//   btn.href = '../html/inicio.html';
-//   btn.className = 'btn-voltar';
-//   leftPanel.insertBefore(btn, leftPanel.firstChild);
-// })();
+(function injectBackButton() {
+  const leftPanel = document.querySelector('.left-panel');
+  if (!leftPanel) return;
+  const btn = document.createElement('a');
+  btn.href = '../html/inicio.html';
+  btn.className = 'btn-voltar';
+  leftPanel.insertBefore(btn, leftPanel.firstChild);
+})();
 
 // // ── Utilitários de validação ────────────────
-// function mostrarErro(inputId, msg) {
-//   const input = document.getElementById(inputId);
-//   if (!input) return;
-//   input.classList.add('input-erro');
-//   let span = input.parentElement.querySelector('.msg-erro');
-//   if (!span) {
-//     span = document.createElement('span');
-//     span.className = 'msg-erro';
-//     input.parentElement.appendChild(span);
-//   }
-//   span.textContent = msg;
-// }
+function mostrarErro(inputId, msg) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.classList.add('input-erro');
+  let span = input.parentElement.querySelector('.msg-erro');
+  if (!span) {
+    span = document.createElement('span');
+    span.className = 'msg-erro';
+    input.parentElement.appendChild(span);
+  }
+  span.textContent = msg;
+}
 
-// function limparErro(inputId) {
-//   const input = document.getElementById(inputId);
-//   if (!input) return;
-//   input.classList.remove('input-erro');
-//   const span = input.parentElement.querySelector('.msg-erro');
-//   if (span) span.textContent = '';
-// }
+function limparErro(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.classList.remove('input-erro');
+  const span = input.parentElement.querySelector('.msg-erro');
+  if (span) span.textContent = '';
+}
 
-// function limparTodosErros() {
-//   ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(limparErro);
-// }
+function limparTodosErros() {
+  ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(limparErro);
+}
 
 // // ── Validação de CPF ────────────────────────
-// function validarCPF(cpf) {
-//   cpf = cpf.replace(/\D/g, '');
-//   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-//   let soma = 0;
-//   for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
-//   let resto = (soma * 10) % 11;
-//   if (resto === 10 || resto === 11) resto = 0;
-//   if (resto !== parseInt(cpf[9])) return false;
-//   soma = 0;
-//   for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
-//   resto = (soma * 10) % 11;
-//   if (resto === 10 || resto === 11) resto = 0;
-//   return resto === parseInt(cpf[10]);
-// }
+function validarCPF(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf[9])) return false;
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  return resto === parseInt(cpf[10]);
+}
 
 // // ── Validação de CNPJ ──────────────────────
-// function validarCNPJ(cnpj) {
-//   cnpj = cnpj.replace(/\D/g, '');
-//   if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
-//   let tamanho = cnpj.length - 2;
-//   let numeros = cnpj.substring(0, tamanho);
-//   const digitos = cnpj.substring(tamanho);
-//   let soma = 0, pos = tamanho - 7;
-//   for (let i = tamanho; i >= 1; i--) {
-//     soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-//     if (pos < 2) pos = 9;
-//   }
-//   let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-//   if (resultado !== parseInt(digitos.charAt(0))) return false;
-//   tamanho++;
-//   numeros = cnpj.substring(0, tamanho);
-//   soma = 0; pos = tamanho - 7;
-//   for (let i = tamanho; i >= 1; i--) {
-//     soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-//     if (pos < 2) pos = 9;
-//   }
-//   resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-//   return resultado === parseInt(digitos.charAt(1));
-// }
+function validarCNPJ(cnpj) {
+  cnpj = cnpj.replace(/\D/g, '');
+  if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+  let tamanho = cnpj.length - 2;
+  let numeros = cnpj.substring(0, tamanho);
+  const digitos = cnpj.substring(tamanho);
+  let soma = 0, pos = tamanho - 7;
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  if (resultado !== parseInt(digitos.charAt(0))) return false;
+  tamanho++;
+  numeros = cnpj.substring(0, tamanho);
+  soma = 0; pos = tamanho - 7;
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  return resultado === parseInt(digitos.charAt(1));
+}
 
 // // ── Validar todos os campos ─────────────────
-// function validarFormulario() {
-//   limparTodosErros();
-//   let valido = true;
+function validarFormulario() {
+  limparTodosErros();
+  let valido = true;
 
-//   const nome = document.getElementById('nome').value.trim();
-//   if (!nome) {
-//     mostrarErro('nome', 'Nome obrigatório.');
-//     valido = false;
-//   } else if (nome.split(' ').filter(p => p).length < 2) {
-//     mostrarErro('nome', 'Informe nome e sobrenome.');
-//     valido = false;
-//   }
+  const nome = document.getElementById('nome').value.trim();
+  if (!nome) {
+    mostrarErro('nome', 'Nome obrigatório.');
+    valido = false;
+  } else if (nome.split(' ').filter(p => p).length < 2) {
+    mostrarErro('nome', 'Informe nome e sobrenome.');
+    valido = false;
+  }
 
-//   const email = document.getElementById('email').value.trim();
-//   if (!email) {
-//     mostrarErro('email', 'E-mail obrigatório.');
-//     valido = false;
-//   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-//     mostrarErro('email', 'E-mail inválido.');
-//     valido = false;
-//   }
+  const email = document.getElementById('email').value.trim();
+  if (!email) {
+    mostrarErro('email', 'E-mail obrigatório.');
+    valido = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    mostrarErro('email', 'E-mail inválido.');
+    valido = false;
+  }
 
-//   const data = document.getElementById('data').value;
-//   if (!data) {
-//     mostrarErro('data', 'Data de nascimento obrigatória.');
-//     valido = false;
-//   } else {
-//     const nascimento = new Date(data);
-//     const hoje = new Date();
-//     const idade = hoje.getFullYear() - nascimento.getFullYear() -
-//       (hoje < new Date(hoje.getFullYear(), nascimento.getMonth(), nascimento.getDate()) ? 1 : 0);
-//     if (idade < 18) {
-//       mostrarErro('data', 'Você deve ter pelo menos 18 anos.');
-//       valido = false;
-//     }
-//   }
+  const data = document.getElementById('data').value;
+  if (!data) {
+    mostrarErro('data', 'Data de nascimento obrigatória.');
+    valido = false;
+  } else {
+    const nascimento = new Date(data);
+    const hoje = new Date();
+    const idade = hoje.getFullYear() - nascimento.getFullYear() -
+      (hoje < new Date(hoje.getFullYear(), nascimento.getMonth(), nascimento.getDate()) ? 1 : 0);
+    if (idade < 18) {
+      mostrarErro('data', 'Você deve ter pelo menos 18 anos.');
+      valido = false;
+    }
+  }
 
-//   const cpf = document.getElementById('cpf').value.trim();
-//   const cpfNumeros = cpf.replace(/\D/g, '');
-//   if (!cpf) {
-//     mostrarErro('cpf', 'CPF/CNPJ obrigatório.');
-//     valido = false;
-//   } else if (cpfNumeros.length === 11 && !validarCPF(cpf)) {
-//     mostrarErro('cpf', 'CPF inválido.');
-//     valido = false;
-//   } else if (cpfNumeros.length === 14 && !validarCNPJ(cpf)) {
-//     mostrarErro('cpf', 'CNPJ inválido.');
-//     valido = false;
-//   } else if (cpfNumeros.length !== 11 && cpfNumeros.length !== 14) {
-//     mostrarErro('cpf', 'Digite um CPF (11 dígitos) ou CNPJ (14 dígitos).');
-//     valido = false;
-//   }
+  const cpf = document.getElementById('cpf').value.trim();
+  const cpfNumeros = cpf.replace(/\D/g, '');
+  if (!cpf) {
+    mostrarErro('cpf', 'CPF/CNPJ obrigatório.');
+    valido = false;
+  } else if (cpfNumeros.length === 11 && !validarCPF(cpf)) {
+    mostrarErro('cpf', 'CPF inválido.');
+    valido = false;
+  } else if (cpfNumeros.length === 14 && !validarCNPJ(cpf)) {
+    mostrarErro('cpf', 'CNPJ inválido.');
+    valido = false;
+  } else if (cpfNumeros.length !== 11 && cpfNumeros.length !== 14) {
+    mostrarErro('cpf', 'Digite um CPF (11 dígitos) ou CNPJ (14 dígitos).');
+    valido = false;
+  }
 
-//   const senha = document.getElementById('senha').value;
-//   if (!senha) {
-//     mostrarErro('senha', 'Senha obrigatória.');
-//     valido = false;
-//   } else if (senha.length < 6) {
-//     mostrarErro('senha', 'A senha deve ter pelo menos 6 caracteres.');
-//     valido = false;
-//   }
+  const senha = document.getElementById('senha').value;
+  if (!senha) {
+    mostrarErro('senha', 'Senha obrigatória.');
+    valido = false;
+  } else if (senha.length < 6) {
+    mostrarErro('senha', 'A senha deve ter pelo menos 6 caracteres.');
+    valido = false;
+  }
 
-//   const confirmar = document.getElementById('confirmar').value;
-//   if (!confirmar) {
-//     mostrarErro('confirmar', 'Confirmação de senha obrigatória.');
-//     valido = false;
-//   } else if (confirmar !== senha) {
-//     mostrarErro('confirmar', 'As senhas não coincidem.');
-//     valido = false;
-//   }
+  const confirmar = document.getElementById('confirmar').value;
+  if (!confirmar) {
+    mostrarErro('confirmar', 'Confirmação de senha obrigatória.');
+    valido = false;
+  } else if (confirmar !== senha) {
+    mostrarErro('confirmar', 'As senhas não coincidem.');
+    valido = false;
+  }
 
-//   return valido;
-// }
+  return valido;
+}
 
-// // ── Evento do botão REGISTRAR ───────────────
-// document.addEventListener('DOMContentLoaded', () => {
-//   const btnRegistrar = document.getElementById('registrar');
-//   if (!btnRegistrar) return;
+// ── Evento do botão REGISTRAR ───────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const btnRegistrar = document.getElementById('registrar');
+  if (!btnRegistrar) return;
 
-//   btnRegistrar.addEventListener('click', () => {
-//     if (validarFormulario()) {
-//       // TODO: enviar dados ao backend (server.js)
-//       alert('Cadastro realizado com sucesso! Redirecionando para o login...');
-//       window.location.href = '../html/login.html';
-//     }
-//   });
+  btnRegistrar.addEventListener('click', () => {
+    if (validarFormulario()) {
+      // TODO: enviar dados ao backend (server.js)
+      alert('Cadastro realizado com sucesso! Redirecionando para o login...');
+      window.location.href = '../html/login.html';
+    }
+  });
 
-//   // Limpa erro ao digitar
-//   ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(id => {
-//     const el = document.getElementById(id);
-//     if (el) el.addEventListener('input', () => limparErro(id));
-//   });
-// });
+  // Limpa erro ao digitar
+  ['nome', 'email', 'data', 'cpf', 'senha', 'confirmar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => limparErro(id));
+  });
+});
 
 
 // ══════════════════════════════════════════════════════════
@@ -220,8 +220,6 @@ function obterCodigoPais() {
 }
 
 // Ajusta o placeholder do campo telefone de acordo com o país escolhido
-// (função responsável por alterar o comportamento do campo conforme o
-// código do país selecionado).
 function alterarCodigoPais() {
     const selectPais = document.getElementById('pais');
     const inputTelefone = document.getElementById('telefone');
@@ -240,8 +238,7 @@ function alterarCodigoPais() {
     inputTelefone.value = aplicarMascaraTelefone(inputTelefone.value);
 }
 
-// Monta o telefone completo (código do país + número já limpo), pronto
-// para ser enviado/salvo. Ex.: "5511999999999"
+// Monta o telefone completo (código do país + número já limpo)
 function montarTelefoneCompleto() {
     const inputTelefone = document.getElementById('telefone');
     if (!inputTelefone) return '';
@@ -252,9 +249,75 @@ function montarTelefoneCompleto() {
     return numeroLimpo ? `${ddi}${numeroLimpo}` : '';
 }
 
+// ══════════════════════════════════════════════════════════
+// CADASTRO: envio do formulário para o backend
+// ══════════════════════════════════════════════════════════
+
+async function cadastro_usuario(event) {
+    event.preventDefault();
+
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const dataNascimento = document.getElementById('data').value;
+    const cpfCnpj = document.getElementById('cpf').value.trim();
+    const senha = document.getElementById('senha').value;
+    const confirmacaoSenha = document.getElementById('confirmar').value;
+
+    if (!nome || !email || !dataNascimento || !cpfCnpj || !senha || !confirmacaoSenha) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+    }
+
+    if (senha !== confirmacaoSenha) {
+        alert("As senhas não coincidem!");
+        return;
+    }
+
+    // Campo telefone existe no formulário, mas o backend (rota /api/auth/cadastro)
+    // ainda não tem uma coluna para ele — por isso não é enviado no payload.
+    // Se um dia o backend passar a aceitar telefone, é só incluir aqui:
+    // const telefone = montarTelefoneCompleto();
+
+    const payload = {
+        nome,
+        email,
+        dataNascimento,
+        cpfCnpj,
+        senha
+    };
+
+    try {
+        const resposta = await fetch(`${API_BASE}/auth/cadastro`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok && resultado.insertId) {
+            alert("Usuário cadastrado com sucesso! Faça login para continuar.");
+            document.getElementById("form_card").reset();
+            window.location.href = "../html/login.html";
+        } else {
+            alert(resultado.mensagem || "O servidor processou a requisição, mas falhou ao salvar no banco.");
+        }
+    } catch (erro) {
+        console.error("Erro na comunicação com a API:", erro);
+        alert("Não foi possível conectar ao servidor. Certifique-se de que o backend está rodando na porta 3000.");
+    }
+}
+
+// ══════════════════════════════════════════════════════════
+// WIRING: liga os eventos assim que a página carrega
+// ══════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', () => {
     const inputTelefone = document.getElementById('telefone');
     const selectPais = document.getElementById('pais');
+    const formCadastro = document.getElementById('form_card');
 
     if (inputTelefone) {
         inputTelefone.addEventListener('input', (evento) => {
@@ -265,98 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectPais) {
         selectPais.addEventListener('change', alterarCodigoPais);
     }
+
+    if (formCadastro) {
+        formCadastro.addEventListener('submit', cadastro_usuario);
+    }
 });
-/* ============================================================
-   tema.js – Perícia Fiducia
-   Gerenciamento centralizado de tema claro/escuro.
-   Inclua este arquivo em TODAS as páginas do sistema.
-   ============================================================ */
-
-(function () {
-    'use strict';
-
-    /* Aplica tema salvo imediatamente para evitar flash */
-    const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    if (temaSalvo === 'claro') {
-        document.documentElement.classList.add('claro');
-        document.documentElement.classList.remove('escuro');
-    }
-
-    function alternarTema() {
-        const body  = document.body;
-        const html  = document.documentElement;
-        const ativandoClaro = !body.classList.contains('claro');
-
-        /* Algumas páginas (login/cadastro) usam body.claro E body.escuro
-           como pares opostos — é preciso alternar as duas classes juntas,
-           senão .escuro (declarada depois no CSS) sobrescreve .claro. */
-        body.classList.toggle('claro',  ativandoClaro);
-        body.classList.toggle('escuro', !ativandoClaro);
-        html.classList.toggle('claro',  ativandoClaro);
-        html.classList.toggle('escuro', !ativandoClaro);
-
-        localStorage.setItem('tema', ativandoClaro ? 'claro' : 'escuro');
-        _atualizarBotoes();
-    }
-
-    function _atualizarBotoes() {
-        const eClaro = document.body.classList.contains('claro');
-
-        document.querySelectorAll('.tema-icon').forEach(function (icon) {
-            if (eClaro) {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        });
-
-        /* Retrocompatibilidade com ID tema-icon (inicio.html) */
-        const legado = document.getElementById('tema-icon');
-        if (legado) {
-            if (eClaro) {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.setAttribute('aria-label',
-                eClaro ? 'Alternar para tema escuro' : 'Alternar para tema claro');
-            btn.setAttribute('title',
-                eClaro ? 'Tema escuro' : 'Tema claro');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const tema = localStorage.getItem('tema') || 'escuro';
-        if (tema === 'claro') {
-            document.body.classList.add('claro');
-            document.body.classList.remove('escuro');
-            document.documentElement.classList.add('claro');
-            document.documentElement.classList.remove('escuro');
-        } else {
-            document.body.classList.remove('claro');
-            document.body.classList.add('escuro');
-            document.documentElement.classList.remove('claro');
-            document.documentElement.classList.add('escuro');
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.addEventListener('click', alternarTema);
-        });
-
-        _atualizarBotoes();
-    });
-
-    window.alternarTema = alternarTema;
-    window.alterar_tema = alternarTema; /* alias legado */
-})();

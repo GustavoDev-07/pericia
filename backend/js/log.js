@@ -1,7 +1,8 @@
-// Função para registrar ações no banco de auditoria
+import executarQuery from "./db.js";
+
 async function registrarLog(usuarioId, usuarioNome, acao, detalhes) {
     const query = `
-        INSERT INTO logs_auditoria (usuario_id, usuario_nome, acao, detalhes) 
+        INSERT INTO logsAuditoria (usuarioId, usuarioNome, acao, detalhes) 
         VALUES (?, ?, ?, ?)
     `;
     try {
@@ -10,3 +11,5 @@ async function registrarLog(usuarioId, usuarioNome, acao, detalhes) {
         console.error("Falha ao gravar log de auditoria:", error);
     }
 }
+
+export {registrarLog};

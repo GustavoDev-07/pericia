@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-async function cadastro_usuario(evento) {
-    evento.preventDefault();
-=======
 async function cadastro_usuario(event) {
     event.preventDefault();
->>>>>>> c1b9fa884d0bc3eb12f8193db6c084163dfb80f4
 
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
@@ -29,7 +24,7 @@ async function cadastro_usuario(event) {
 
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/cadastro', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/cadastro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,14 +35,13 @@ async function cadastro_usuario(event) {
         const resultado = await resposta.json();
 
         if (resposta.ok && resultado.insertId) {
-<<<<<<< HEAD
+
             alert("Usuário cadastrado com sucesso! ID: " + resultado.insertId);
 
-=======
             localStorage.setItem('usuarioLogado', JSON.stringify(resultado.usuario))
             alert("Usuário cadastrado com sucesso! ID: " + resultado.insertId);
             window.location.replace("http://127.0.0.1:5500/frontend/html/inicio.html");
->>>>>>> c1b9fa884d0bc3eb12f8193db6c084163dfb80f4
+
             document.getElementById("form_card").reset();
         } else {
             alert(resultado.mensagem || "O servidor processou a requisição, mas falhou ao salvar no banco.")
@@ -58,14 +52,11 @@ async function cadastro_usuario(event) {
     }
 };
 
-<<<<<<< HEAD
-=======
 window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('form_card').addEventListener('submit', cadastro_usuario);
 })
 
->>>>>>> c1b9fa884d0bc3eb12f8193db6c084163dfb80f4
 async function loginUsuario(event) {
 
     const email = document.getElementById('email').value;
@@ -84,7 +75,7 @@ async function loginUsuario(event) {
     };
 
     try {
-        const resposta = await fetch('http://127.0.0.1:3000/login', {
+        const resposta = await fetch('https://pericia-backend.up.railway.app/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
