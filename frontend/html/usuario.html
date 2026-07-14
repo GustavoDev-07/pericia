@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
     <!-- Reaproveita o mesmo CSS/JS da navbar de inicio.html para manter a barra do topo idêntica -->
     <link rel="stylesheet" href="../css/inicio.css">
     <link rel="stylesheet" href="../css/usuario.css">
     <script src="../js/inicio.js"></script>
     <title>Minha Conta – Perícia Fiducia</title>
 </head>
+
 <body class="escuro">
 
     <!-- NAVBAR (igual à de inicio.html / contato.html) -->
     <nav class="navbar">
         <div class="nav-brand">
             <div class="nav-logo">
-               <img src="../ico/logo.png" class="logo">
+                <img src="../ico/logo.png" class="logo">
             </div>
             <div class="nav-title">
                 <span class="brand-name">Perícia Fiducia</span>
@@ -37,9 +41,12 @@
 
         <div class="nav-actions">
             <button class="btn-tema" data-tema-toggle title="Alternar tema" aria-label="Alternar tema">
-                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    <path
+                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+                    </path>
                 </svg>
             </button>
             <div id="area-usuario">
@@ -95,26 +102,26 @@
                 <div>
                     <label for="input-dispositivo">Dispositivo:</label><br>
                     <input type="text" id="input-dispositivo" name="dispositivo"
-                           placeholder="Ex: Notebook, HD externo, Celular..." required>
+                        placeholder="Ex: Notebook, HD externo, Celular..." required>
                 </div>
 
                 <div>
                     <label for="input-modelo">Modelo do dispositivo:</label><br>
                     <input type="text" id="input-modelo" name="modelo"
-                           placeholder="Ex: Dell Inspiron 15, iPhone 13, Samsung T7..." required>
+                        placeholder="Ex: Dell Inspiron 15, iPhone 13, Samsung T7..." required>
                 </div>
 
                 <div>
                     <label for="input-o-que-fazer">O que precisa ser feito no dispositivo:</label><br>
                     <textarea id="input-o-que-fazer" name="o_que_fazer"
-                              placeholder="Ex: Recuperação de dados, extração de mensagens, laudo de dano físico..."
-                              required></textarea>
+                        placeholder="Ex: Recuperação de dados, extração de mensagens, laudo de dano físico..."
+                        required></textarea>
                 </div>
 
                 <div>
                     <label for="input-prazo">Em quanto tempo a perícia deve ser concluída:</label><br>
                     <input type="text" id="input-prazo" name="prazo"
-                           placeholder="Ex: 5 dias úteis, 15/08/2026, urgente..." required>
+                        placeholder="Ex: 5 dias úteis, 15/08/2026, urgente..." required>
                 </div>
 
                 <div>
@@ -151,7 +158,8 @@
     <!-- Template (não visível) de um card de pedido, usado pelo JS -->
     <template id="template-pedido">
         <article class="pedido-item">
-            <button type="button" class="btn-excluir-item" title="Excluir este pedido" aria-label="Excluir este pedido">🗑️</button>
+            <button type="button" class="btn-excluir-item" title="Excluir este pedido"
+                aria-label="Excluir este pedido">🗑️</button>
 
             <h3 class="pedido-dispositivo"></h3>
             <p><strong>Modelo:</strong> <span class="pedido-modelo"></span></p>
@@ -172,7 +180,21 @@
         </article>
     </template>
 
+    <section class="painel-secao" id="secao-candidatura">
+        <h2>Trabalhe Conosco</h2>
+        <p>Quer fazer parte da nossa equipe técnica ou de logística? Envie sua candidatura abaixo.</p>
+
+        <label for="select-cargo-desejado">Deseja se candidatar como:</label>
+        <select id="select-cargo-desejado">
+            <option value="perito">Perito</option>
+            <option value="logistica">Logística</option>
+        </select>
+
+        <button type="button" id="btn-candidatar-se">Enviar Candidatura</button>
+    </section>
+
     <script src="../js/usuario.js"></script>
     <script src="../js/tema.js"></script>
 </body>
+
 </html>

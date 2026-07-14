@@ -177,12 +177,27 @@ router.delete('/usuario/excluir-conta', verificarToken, async (req, res) => {
 
 router.put('/candidatar-perito', verificarToken, async (req, res) => {
     const idUsuario = req.usuario.id;
+    const { cargoDesejado } = req.body;
 
-    const query = "UPDATE usuarios SET statusAprovacao = 'pendente' WHERE id = ? AND role = 'cliente'";
+    const cargosValidos = ['perito', 'logistica'];
+    if (!cargoDesejado || !cargosValidos.includes(cargoDesejado)) {
+        return res.status(400).json({ erro: "Informe o cargo desejado: 'perito' ou 'logistica'." });
+    }
+
+    const query = `
+        UPDATE usuarios 
+        SET statusAprovacao = 'pendente', cargoDesejado = ? 
+        WHERE id = ? AND role = 'cliente'
+    `;
 
     try {
-        await executarQuery(query, [idUsuario]);
-        return res.json({ mensagem: "Sua candidatura a perito foi enviada! Aguarde o retorno." });
+        const resultado = await executarQuery(query, [cargoDesejado, idUsuario]);
+
+        if (resultado[0].affectedRows === 0) {
+            return res.status(400).json({ erro: "Não foi possível enviar a candidatura. Verifique se sua conta já não é perito/logística/admin." });
+        }
+
+        return res.json({ mensagem: `Sua candidatura a ${cargoDesejado} foi enviada! Aguarde o retorno.` });
     } catch (error) {
         return res.status(500).json({ erro: "Erro ao enviar candidatura." });
     }
@@ -380,7 +395,7 @@ function acaoParaTipo(acao) {
 }
 router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
-        const query = "SELECT id, nome, email, role AS cargoAtual, statusAprovacao AS statusAprovacao FROM usuarios WHERE statusAprovacao = 'pendente'";
+        const query = "SELECT id, nome, email, role AS cargoAtual, statusAprovacao AS statusAprovacao, cargoDesejado FROM usuarios WHERE statusAprovacao = 'pendente'";
         const [candidaturas] = await executarQuery(query);
         return res.json(candidaturas);
     } catch (error) {
