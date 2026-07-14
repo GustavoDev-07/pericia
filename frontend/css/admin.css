@@ -177,7 +177,28 @@ body.claro #lista-grafico-tipos li { background: rgba(15, 27, 50, 0.03); }
 }
 
 .candidatura-email { color: var(--clr-text-muted); font-size: 0.88rem; }
-.candidatura-acoes { display: flex; gap: 10px; }
+.candidatura-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.candidatura-cargo-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+}
+
+.select-cargo-candidatura {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--clr-text);
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+}
+
+.select-cargo-candidatura:focus { border-color: var(--clr-cyan); }
 
 #dispositivos-admin-filtros,
 #auditoria-filtros {
