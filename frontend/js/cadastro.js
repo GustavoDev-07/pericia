@@ -220,8 +220,6 @@ function obterCodigoPais() {
 }
 
 // Ajusta o placeholder do campo telefone de acordo com o país escolhido
-// (função responsável por alterar o comportamento do campo conforme o
-// código do país selecionado).
 function alterarCodigoPais() {
     const selectPais = document.getElementById('pais');
     const inputTelefone = document.getElementById('telefone');
@@ -240,8 +238,7 @@ function alterarCodigoPais() {
     inputTelefone.value = aplicarMascaraTelefone(inputTelefone.value);
 }
 
-// Monta o telefone completo (código do país + número já limpo), pronto
-// para ser enviado/salvo. Ex.: "5511999999999"
+// Monta o telefone completo (código do país + número já limpo)
 function montarTelefoneCompleto() {
     const inputTelefone = document.getElementById('telefone');
     if (!inputTelefone) return '';
@@ -252,9 +249,75 @@ function montarTelefoneCompleto() {
     return numeroLimpo ? `${ddi}${numeroLimpo}` : '';
 }
 
+// ══════════════════════════════════════════════════════════
+// CADASTRO: envio do formulário para o backend
+// ══════════════════════════════════════════════════════════
+
+async function cadastro_usuario(event) {
+    event.preventDefault();
+
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const dataNascimento = document.getElementById('data').value;
+    const cpfCnpj = document.getElementById('cpf').value.trim();
+    const senha = document.getElementById('senha').value;
+    const confirmacaoSenha = document.getElementById('confirmar').value;
+
+    if (!nome || !email || !dataNascimento || !cpfCnpj || !senha || !confirmacaoSenha) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+    }
+
+    if (senha !== confirmacaoSenha) {
+        alert("As senhas não coincidem!");
+        return;
+    }
+
+    // Campo telefone existe no formulário, mas o backend (rota /api/auth/cadastro)
+    // ainda não tem uma coluna para ele — por isso não é enviado no payload.
+    // Se um dia o backend passar a aceitar telefone, é só incluir aqui:
+    // const telefone = montarTelefoneCompleto();
+
+    const payload = {
+        nome,
+        email,
+        dataNascimento,
+        cpfCnpj,
+        senha
+    };
+
+    try {
+        const resposta = await fetch(`${API_BASE}/auth/cadastro`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok && resultado.insertId) {
+            alert("Usuário cadastrado com sucesso! Faça login para continuar.");
+            document.getElementById("form_card").reset();
+            window.location.href = "../html/login.html";
+        } else {
+            alert(resultado.mensagem || "O servidor processou a requisição, mas falhou ao salvar no banco.");
+        }
+    } catch (erro) {
+        console.error("Erro na comunicação com a API:", erro);
+        alert("Não foi possível conectar ao servidor. Certifique-se de que o backend está rodando na porta 3000.");
+    }
+}
+
+// ══════════════════════════════════════════════════════════
+// WIRING: liga os eventos assim que a página carrega
+// ══════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', () => {
     const inputTelefone = document.getElementById('telefone');
     const selectPais = document.getElementById('pais');
+    const formCadastro = document.getElementById('form_card');
 
     if (inputTelefone) {
         inputTelefone.addEventListener('input', (evento) => {
@@ -265,98 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectPais) {
         selectPais.addEventListener('change', alterarCodigoPais);
     }
+
+    if (formCadastro) {
+        formCadastro.addEventListener('submit', cadastro_usuario);
+    }
 });
-/* ============================================================
-   tema.js – Perícia Fiducia
-   Gerenciamento centralizado de tema claro/escuro.
-   Inclua este arquivo em TODAS as páginas do sistema.
-   ============================================================ */
-
-(function () {
-    'use strict';
-
-    /* Aplica tema salvo imediatamente para evitar flash */
-    const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    if (temaSalvo === 'claro') {
-        document.documentElement.classList.add('claro');
-        document.documentElement.classList.remove('escuro');
-    }
-
-    function alternarTema() {
-        const body  = document.body;
-        const html  = document.documentElement;
-        const ativandoClaro = !body.classList.contains('claro');
-
-        /* Algumas páginas (login/cadastro) usam body.claro E body.escuro
-           como pares opostos — é preciso alternar as duas classes juntas,
-           senão .escuro (declarada depois no CSS) sobrescreve .claro. */
-        body.classList.toggle('claro',  ativandoClaro);
-        body.classList.toggle('escuro', !ativandoClaro);
-        html.classList.toggle('claro',  ativandoClaro);
-        html.classList.toggle('escuro', !ativandoClaro);
-
-        localStorage.setItem('tema', ativandoClaro ? 'claro' : 'escuro');
-        _atualizarBotoes();
-    }
-
-    function _atualizarBotoes() {
-        const eClaro = document.body.classList.contains('claro');
-
-        document.querySelectorAll('.tema-icon').forEach(function (icon) {
-            if (eClaro) {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                icon.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        });
-
-        /* Retrocompatibilidade com ID tema-icon (inicio.html) */
-        const legado = document.getElementById('tema-icon');
-        if (legado) {
-            if (eClaro) {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                legado.innerHTML =
-                    '<circle cx="12" cy="12" r="5"></circle>' +
-                    '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
-            }
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.setAttribute('aria-label',
-                eClaro ? 'Alternar para tema escuro' : 'Alternar para tema claro');
-            btn.setAttribute('title',
-                eClaro ? 'Tema escuro' : 'Tema claro');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const tema = localStorage.getItem('tema') || 'escuro';
-        if (tema === 'claro') {
-            document.body.classList.add('claro');
-            document.body.classList.remove('escuro');
-            document.documentElement.classList.add('claro');
-            document.documentElement.classList.remove('escuro');
-        } else {
-            document.body.classList.remove('claro');
-            document.body.classList.add('escuro');
-            document.documentElement.classList.remove('claro');
-            document.documentElement.classList.add('escuro');
-        }
-
-        document.querySelectorAll('[data-tema-toggle]').forEach(function (btn) {
-            btn.addEventListener('click', alternarTema);
-        });
-
-        _atualizarBotoes();
-    });
-
-    window.alternarTema = alternarTema;
-    window.alterar_tema = alternarTema; /* alias legado */
-})();
