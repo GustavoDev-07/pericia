@@ -296,6 +296,144 @@ router.put('/logistica/devolver/:id', verificarToken, permitirCargos(['logistica
     }
 });
 
+// ==========================================================================
+// ROTAS NOVAS a adicionar em dispositivos.js
+// Cole este bloco no arquivo de rotas de dispositivos, próximo às rotas
+// '/logistica/receber/:id' e '/logistica/devolver/:id' já existentes.
+// ==========================================================================
+
+// ---------------------------------------------------------------------
+// GET /dispositivos/logistica/aguardando-recebimento
+// Lista os dispositivos com status = 'aguardandoEnvio', ou seja, que o
+// cliente já cadastrou mas que ainda não foram recebidos fisicamente na
+// empresa. É essa lista que precisa aparecer na tela para permitir a
+// transição aguardandoEnvio -> recebidoNaEmpresa.
+// ---------------------------------------------------------------------
+router.get('/logistica/aguardando-recebimento', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const { busca } = req.query;
+
+    let query = `
+        SELECT d.id, d.tipoDispositivo, d.modeloDescricao, d.formaEntrega,
+               d.codigoRastreio, d.protocolo,
+               DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_entrada,
+               u.nome AS nome_cliente
+        FROM dispositivos d
+        INNER JOIN usuarios u ON d.usuarioId = u.id
+        WHERE d.status = 'aguardandoEnvio'
+    `;
+    const params = [];
+
+    if (busca) {
+        query += ` AND (u.nome LIKE ? OR d.protocolo LIKE ? OR d.modeloDescricao LIKE ?)`;
+        const termo = `%${busca}%`;
+        params.push(termo, termo, termo);
+    }
+
+    query += ` ORDER BY d.dataEntrada ASC`;
+
+    try {
+        const [linhas] = await executarQuery(query, params);
+        return res.json(linhas);
+    } catch (error) {
+        console.error("Erro ao buscar dispositivos aguardando recebimento:", error);
+        return res.status(500).json({ erro: "Erro interno ao buscar dispositivos aguardando recebimento." });
+    }
+});
+
+// ---------------------------------------------------------------------
+// GET /dispositivos/logistica/pendentes-entrega
+// Lista os dispositivos com status = 'concluida', ou seja, com perícia
+// finalizada e prontos para serem devolvidos/entregues ao cliente.
+// ---------------------------------------------------------------------
+router.get('/logistica/pendentes-entrega', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const { busca } = req.query;
+
+    let query = `
+        SELECT d.id, d.tipoDispositivo, d.modeloDescricao,
+               DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_conclusao,
+               u_cliente.nome AS nome_cliente,
+               u_perito.nome AS nome_perito
+        FROM dispositivos d
+        INNER JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
+        LEFT JOIN usuarios u_perito ON d.peritoId = u_perito.id
+        WHERE d.status = 'concluida'
+    `;
+    const params = [];
+
+    if (busca) {
+        query += ` AND (u_cliente.nome LIKE ? OR d.protocolo LIKE ? OR d.modeloDescricao LIKE ?)`;
+        const termo = `%${busca}%`;
+        params.push(termo, termo, termo);
+    }
+
+    query += ` ORDER BY d.dataEntrada ASC`;
+
+    try {
+        const [linhas] = await executarQuery(query, params);
+        return res.json(linhas);
+    } catch (error) {
+        console.error("Erro ao buscar pendentes de entrega:", error);
+        return res.status(500).json({ erro: "Erro interno ao buscar pendentes de entrega." });
+    }
+});
+
+// ---------------------------------------------------------------------
+// GET /dispositivos/logistica/entregues
+// Lista os dispositivos com status = 'devolvida', já entregues ao cliente.
+// ---------------------------------------------------------------------
+router.get('/logistica/entregues', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const { busca } = req.query;
+
+    let query = `
+        SELECT d.id, d.tipoDispositivo, d.modeloDescricao,
+               DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_entrega,
+               u.nome AS nome_cliente
+        FROM dispositivos d
+        INNER JOIN usuarios u ON d.usuarioId = u.id
+        WHERE d.status = 'devolvida'
+    `;
+    const params = [];
+
+    if (busca) {
+        query += ` AND (u.nome LIKE ? OR d.protocolo LIKE ? OR d.modeloDescricao LIKE ?)`;
+        const termo = `%${busca}%`;
+        params.push(termo, termo, termo);
+    }
+
+    query += ` ORDER BY d.dataEntrada DESC`;
+
+    try {
+        const [linhas] = await executarQuery(query, params);
+        return res.json(linhas);
+    } catch (error) {
+        console.error("Erro ao buscar dispositivos entregues:", error);
+        return res.status(500).json({ erro: "Erro interno ao buscar dispositivos entregues." });
+    }
+});
+
+// ---------------------------------------------------------------------
+// PUT /dispositivos/logistica/reverter-entrega/:id
+// Reverte uma entrega confirmada por engano: 'devolvida' -> 'concluida'.
+// NÃO reaproveita a rota '/logistica/receber/:id' porque aquela é
+// exclusiva da transição inicial 'aguardandoEnvio' -> 'recebidoNaEmpresa'
+// (ver comentário no arquivo original). Precisa ser uma rota própria.
+// ---------------------------------------------------------------------
+router.put('/logistica/reverter-entrega/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
+    const dispositivoId = req.params.id;
+    const query = `UPDATE dispositivos SET status = 'concluida' WHERE id = ? AND status = 'devolvida'`;
+
+    try {
+        const result = await executarQuery(query, [dispositivoId]);
+        if (result[0].affectedRows === 0) {
+            return res.status(400).json({ erro: "Este dispositivo não está com entrega confirmada, não é possível reverter." });
+        }
+        return res.json({ mensagem: "Entrega revertida com sucesso! O dispositivo voltou para a lista de pendentes de entrega." });
+    } catch (error) {
+        console.error("Erro ao reverter entrega:", error);
+        return res.status(500).json({ erro: "Erro interno no servidor." });
+    }
+});
+
 router.post('/dados-laudo/:protocolo/verificar-codigo', laudoLimiter, async (req, res) => {
     const { protocolo } = req.params; 
     const { codigo } = req.body;
