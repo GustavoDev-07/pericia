@@ -65,7 +65,10 @@
 //        obterRoleDoToken() usa como fallback nesta página.
 // ==========================================================================
 
-const API_BASE = 'https://pericia-backend.up.railway.app/api';
+// API_BASE já é declarado globalmente por inicio.js, carregado antes desta
+// página. Uma segunda "const API_BASE" aqui causava
+// "SyntaxError: Identifier 'API_BASE' has already been declared", quebrando
+// a execução deste arquivo inteiro.
 
 let paginaAuditoriaAtual = 1;
 const LIMITE_AUDITORIA_POR_PAGINA = 20;

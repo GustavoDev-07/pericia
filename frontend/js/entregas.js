@@ -58,7 +58,10 @@
 //   checagem de "role" no front já tenha liberado o botão.
 // ==========================================================================
 
- const API_BASE = 'https://pericia-backend.up.railway.app/api';
+ // API_BASE já é declarado globalmente por inicio.js, carregado antes desta
+ // página. Uma segunda "const API_BASE" aqui causava
+ // "SyntaxError: Identifier 'API_BASE' has already been declared", quebrando
+ // a execução deste arquivo inteiro.
 
  document.addEventListener('DOMContentLoaded', () => {
      const token = localStorage.getItem('token');
@@ -78,7 +81,7 @@ async function verificarPermissaoEntregas(token) {
     const verificando = document.getElementById('entregas-verificando-permissao');
 
     try {
-        const resposta = await fetch(`${API_BASE}/usuario/perfil`, {
+        const resposta = await fetch(`${API_BASE}/auth/usuario/perfil`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
