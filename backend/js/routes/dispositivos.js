@@ -53,7 +53,7 @@ router.put('/assumir-dispositivos/:id', verificarToken, permitirCargos(['perito'
     try {
         const resultado = await executarQuery(query, [peritoId, nomeFoto, dispositivoId]);
 
-        if (resultado.affectedRows === 0) {
+        if (resultado[0].affectedRows === 0) {
             return res.status(400).json({
                 mensagem: "Este dispositivo já foi assumido por outro perito ou não existe."
             });
@@ -118,7 +118,7 @@ router.put('/finalizar-pericia/:id', verificarToken, permitirCargos(['perito']),
     try {
         const result = await executarQuery(query, [parecer_tecnico, dispositivoId, peritoId]);
 
-        if (result.affectedRows === 0) {
+        if (result[0].affectedRows === 0) {
             return res.status(400).json({ erro: "Não foi possível finalizar. Verifique se você é o perito responsável por este caso." });
         }
 
@@ -211,7 +211,7 @@ router.post('/cadastrar', verificarToken, permitirCargos(['cliente']), async (re
 
         const queryDispositivo = `
             INSERT INTO dispositivos (usuarioId, tipoDispositivo, modeloDescricao, formaEntrega, enderecoDevolucaoId, status, protocolo, codigoAcessoLaudo) 
-            VALUES (?, ?, ?, ?, ?, 'aguardando_envio', ?, ?)
+            VALUES (?, ?, ?, ?, ?, 'aguardandoEnvio', ?, ?)
         `;
         
         await executarQuery(queryDispositivo, [
@@ -252,14 +252,14 @@ router.put('/atualizar-rastreio/:id', verificarToken, permitirCargos(['cliente']
 
     const query = `
         UPDATE dispositivos 
-        SET codigo_rastreio = ? 
-        WHERE id = ? AND usuario_id = ? AND forma_entrega = 'correios'
+        SET codigoRastreio = ? 
+        WHERE id = ? AND usuarioId = ? AND formaEntrega = 'correios'
     `;
 
     try {
         const result = await executarQuery(query, [codigoRastreio, dispositivoId, usuarioId]);
 
-        if (result.affectedRows === 0) {
+        if (result[0].affectedRows === 0) {
             return res.status(404).json({ erro: "Dispositivo não encontrado ou modalidade não é via Correios." });
         }
 
@@ -276,7 +276,7 @@ router.put('/logistica/receber/:id', verificarToken, permitirCargos(['logistica'
 
     try {
         const result = await executarQuery(query, [dispositivoId]);
-        if (result.affectedRows === 0) return res.status(400).json({ erro: "Dispositivo indisponível para recebimento." });
+        if (result[0].affectedRows === 0) return res.status(400).json({ erro: "Dispositivo indisponível para recebimento." });
         return res.json({ mensagem: "Entrada confirmada! Disponível para os peritos." });
     } catch (error) {
         return res.status(500).json({ erro: "Erro interno no servidor." });
@@ -285,11 +285,11 @@ router.put('/logistica/receber/:id', verificarToken, permitirCargos(['logistica'
 
 router.put('/logistica/devolver/:id', verificarToken, permitirCargos(['logistica', 'admin']), async (req, res) => {
     const dispositivoId = req.params.id;
-    const query = `UPDATE dispositivos SET status = 'concluida' WHERE id = ? AND status = 'concluida'`;
+    const query = `UPDATE dispositivos SET status = 'devolvida' WHERE id = ? AND status = 'concluida'`;
 
     try {
         const result = await executarQuery(query, [dispositivoId]);
-        if (result.affectedRows === 0) return res.status(400).json({ erro: "A perícia deste item ainda não foi concluída." });
+        if (result[0].affectedRows === 0) return res.status(400).json({ erro: "A perícia deste item ainda não foi concluída." });
         return res.json({ mensagem: "Devolução registrada com sucesso!" });
     } catch (error) {
         return res.status(500).json({ erro: "Erro interno no servidor." });
