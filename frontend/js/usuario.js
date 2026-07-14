@@ -7,7 +7,11 @@
 // <script> comum, então o JS nunca chegava a rodar e nenhum dado aparecia.
 // ==========================================================================
 
-const API_BASE = 'https://pericia-backend.up.railway.app/api';
+// API_BASE já é declarado globalmente por inicio.js, que é sempre carregado
+// antes desta página (ver <script src="../js/inicio.js"> no <head>). Uma
+// segunda declaração "const API_BASE" aqui causava
+// "SyntaxError: Identifier 'API_BASE' has already been declared", que
+// quebrava a execução deste arquivo inteiro.
 
 // Mapa de status -> (texto exibido, % da barra de progresso)
 const STATUS_PEDIDO = {

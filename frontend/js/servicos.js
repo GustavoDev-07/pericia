@@ -11,7 +11,10 @@
 //   DELETE /api/dispositivos/cancelar/:id           -> cancela/exclui um pedido (PRECISA CRIAR no backend)
 // ==========================================================================
 
-const API_BASE = 'https://pericia-backend.up.railway.app/api';
+// API_BASE já é declarado globalmente por inicio.js, carregado antes desta
+// página. Uma segunda "const API_BASE" aqui causava
+// "SyntaxError: Identifier 'API_BASE' has already been declared", quebrando
+// a execução deste arquivo inteiro.
 
  document.addEventListener('DOMContentLoaded', () => {
      const token = localStorage.getItem('token');
