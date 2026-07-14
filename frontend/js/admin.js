@@ -5,57 +5,64 @@
 // a confirmação de entrada física do dispositivo na empresa) e o novo
 // módulo de Auditoria, que lista os eventos importantes do sistema.
 //
-// IMPORTANTE — NENHUMA ALTERAÇÃO DE BACKEND OU CSS FOI FEITA AQUI, conforme
-// solicitado. Este arquivo assume que o backend expõe as rotas abaixo. As
-// que já existem no backend atual estão marcadas com "(já existe)"; as
-// demais precisam ser criadas para que esta tela funcione de ponta a ponta.
+// ALINHAMENTO COM O BACKEND (feito nesta revisão)
+// -------------------------------------------------------------------------
+// Estratégia adotada: sempre que a rota já existia no backend com um nome
+// diferente, o FRONT foi ajustado para chamar o nome real (mais simples e
+// evita duplicar rotas no backend). Só foi criada rota nova em
+// backend/js/routes/usuarios.js (prefixo /admin/) quando a funcionalidade
+// realmente não existia em nenhum lugar do backend.
 //
-//   GET  /usuario/perfil                              -> (já existe) dados do usuário logado.
-//        Precisa passar a incluir também o campo "role" (ex.: "admin",
-//        "perito", "cliente") na resposta, pois é isso que esta página usa
-//        para decidir se o usuário pode ver o painel e confirmar a entrada
-//        de dispositivos na empresa. Hoje o token/rotas de login não
-//        devolvem o "role" para o front, então isso precisa ser ajustado.
+//   GET  /api/auth/admin/dashboard                        -> (já existia, sem mudança)
 //
-//   GET  /api/auth/admin/dashboard                     -> (já existe) cards +
-//        gráfico por tipo de dispositivo.
+//   GET  /api/auth/admin/auditoria/candidaturas            -> (já existia)
+//        Front ajustado: antes chamava /auth/admin/candidaturas-pendentes.
 //
-//   PUT  /api/auth/admin/aprovar-perito/:id             -> (já existe)
-//   PUT  /api/auth/admin/recusar-perito/:id              -> (já existe)
+//   PUT  /api/auth/admin/auditoria/decidir-candidatura/:id -> (já existia)
+//        Front ajustado: antes chamava duas rotas separadas
+//        (aprovar-perito/recusar-perito) sem body. Agora chama a rota única
+//        já existente, enviando { acao: 'aprovar'|'recusar', cargoDesejado: 'perito' }.
 //
-//   GET  /api/auth/admin/candidaturas-pendentes          -> (PRECISA CRIAR)
-//        Deve retornar a lista de usuários com status_aprovacao = 'pendente'
-//        (id, nome, email) para popular a seção de candidaturas.
+//   GET  /api/auth/admin/dispositivos                      -> (CRIADA nesta revisão,
+//        em backend/js/routes/usuarios.js, prefixo /admin/, pois não podíamos
+//        mexer em backend/js/routes/dispositivos.js). Faz o mesmo tipo de JOIN
+//        usado em /dispositivos/meus-servicos para trazer nome do cliente e
+//        do perito. Aceita filtro opcional ?status=.
+//        PENDÊNCIA: a tabela "dispositivos" não tem uma coluna "localizacao"
+//        (com_cliente | em_transporte | empresa) — essa rota deriva um valor
+//        aproximado a partir da coluna "status" existente. Para um valor real
+//        de localização física, é necessário que quem mexe em dispositivos.js
+//        (e no schema do banco) adicione essa coluna; documentado aqui para
+//        não duplicar esse trabalho.
 //
-//   GET  /api/dispositivos/admin/todos                    -> (PRECISA CRIAR)
-//        Lista todos os dispositivos do sistema com os dados do cliente e
-//        do perito responsável (parecido com o JOIN usado em
-//        /dispositivos/meus-servicos), incluindo um novo campo
-//        "localizacao" (ex.: 'com_cliente' | 'em_transporte' | 'empresa').
-//        Aceita filtro opcional por status via query string (?status=).
+//   PUT  /api/auth/admin/receber-dispositivo/:id           -> (já existia)
+//        Front ajustado: antes chamava /dispositivos/admin/confirmar-entrada/:id,
+//        que não existia em lugar nenhum do backend.
+//        PENDÊNCIA: essa rota hoje não grava evento na tabela de auditoria
+//        (logsAuditoria); seria bom que passasse a chamar registrarLog(),
+//        assim como as rotas de aprovar/recusar perito já fazem.
 //
-//   PUT  /api/dispositivos/admin/confirmar-entrada/:id     -> (PRECISA CRIAR)
-//        Atualiza a coluna "localizacao" do dispositivo para 'empresa'.
-//        Recomenda-se restringir com permitirCargos(['admin']) (mesmo
-//        padrão já usado em outras rotas de admin) para garantir que só
-//        quem tem essa permissão possa confirmar a entrada — dessa forma
-//        não é necessário criar um cargo novo, basta reaproveitar o
-//        controle de "role" que já existe em autenticacao.js. Essa rota
-//        também deveria gravar um evento na tabela de auditoria (ver
-//        abaixo).
+//   GET  /api/auth/admin/auditoria/logs?tipo=&busca=&pagina=&limite=
+//        -> (já existia, mas sem suporte a filtro/paginação; foi estendida
+//        nesta revisão, dentro do escopo /admin/, para aceitar esses query
+//        params e devolver { eventos, temMais }).
+//        Front ajustado: antes chamava /auditoria (rota inexistente).
+//        PENDÊNCIA (fora de escopo, não resolvida aqui): a coluna "acao" da
+//        tabela logsAuditoria guarda texto livre (ex.: "Login", "Promoção de
+//        Cargo"), não os valores fixos que formatarTipoEvento() espera
+//        (ex.: "perito_aprovado", "login"). Então o filtro por "tipo" e a
+//        tradução do rótulo na tela podem não bater 100% até que as rotas
+//        que chamam registrarLog() padronizem esses valores.
 //
-//   GET  /api/auditoria                                    -> (PRECISA CRIAR)
-//        Lista os eventos do sistema para a aba de Auditoria. Sugestão de
-//        estrutura (ex.: nova tabela "auditoria" no banco):
-//          id, tipo (dispositivo_cadastrado, dispositivo_entrada_empresa,
-//          dispositivo_assumido, pericia_finalizada, perito_aprovado,
-//          perito_recusado, login, ...), descricao, usuario_id,
-//          usuario_nome, dispositivo_id, data_hora.
-//        Aceita query string opcional: ?tipo=&busca=&pagina=&limite=
-//        Cada rota que gera um evento relevante (cadastrar dispositivo,
-//        assumir dispositivo, finalizar perícia, aprovar/recusar perito,
-//        confirmar entrada na empresa, login) precisaria inserir uma linha
-//        nessa tabela.
+//   GET  https://pericia-backend.up.railway.app/usuario/perfil (hardcoded, fora
+//        do API_BASE, sem /api) -> NÃO EXISTE no backend atual e NÃO foi criada
+//        aqui, pois a mesma chamada aparece hardcoded em outros arquivos do
+//        frontend fora do escopo desta tarefa (inicio.js, entregas.js,
+//        peritos.js, usuario.js). PENDÊNCIA a resolver junto com quem mexe
+//        nesses arquivos, para não duplicar o trabalho. Quando essa rota for
+//        criada, ela também precisa passar a devolver o campo "role" do
+//        usuário logado (hoje só vem dentro do JWT), que é o que
+//        obterRoleDoToken() usa como fallback nesta página.
 // ==========================================================================
 
 const API_BASE = 'https://pericia-backend.up.railway.app/api';
@@ -194,7 +201,7 @@ async function carregarCandidaturas(token) {
     const vazio = document.getElementById('candidaturas-vazia');
 
     try {
-        const resposta = await fetch(`${API_BASE}/auth/admin/candidaturas-pendentes`, {
+        const resposta = await fetch(`${API_BASE}/auth/admin/auditoria/candidaturas`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -263,7 +270,6 @@ function criarCardCandidatura(candidato, token) {
 }
 
 async function decidirCandidatura(idCandidato, decisao, token, card) {
-    const rota = decisao === 'aprovar' ? 'aprovar-perito' : 'recusar-perito';
     const confirmar = confirm(
         decisao === 'aprovar'
             ? 'Confirma a aprovação deste candidato a perito?'
@@ -272,12 +278,16 @@ async function decidirCandidatura(idCandidato, decisao, token, card) {
     if (!confirmar) return;
 
     try {
-        const resposta = await fetch(`${API_BASE}/auth/admin/${rota}/${idCandidato}`, {
+        const resposta = await fetch(`${API_BASE}/auth/admin/auditoria/decidir-candidatura/${idCandidato}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                acao: decisao, // 'aprovar' | 'recusar'
+                cargoDesejado: 'perito'
+            })
         });
 
         const resultado = await resposta.json().catch(() => ({}));
@@ -327,7 +337,7 @@ async function carregarDispositivosAdmin(token, status) {
 
     try {
         const query = status ? `?status=${encodeURIComponent(status)}` : '';
-        const resposta = await fetch(`${API_BASE}/dispositivos/admin/todos${query}`, {
+        const resposta = await fetch(`${API_BASE}/auth/admin/dispositivos${query}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -472,7 +482,7 @@ async function confirmarEntradaDispositivo(dispositivo, token) {
     btnConfirmar.disabled = true;
 
     try {
-        const resposta = await fetch(`${API_BASE}/dispositivos/admin/confirmar-entrada/${dispositivo.id}`, {
+        const resposta = await fetch(`${API_BASE}/auth/admin/receber-dispositivo/${dispositivo.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -552,7 +562,7 @@ async function carregarAuditoria(token, { reiniciar }) {
         parametros.set('pagina', paginaAuditoriaAtual);
         parametros.set('limite', LIMITE_AUDITORIA_POR_PAGINA);
 
-        const resposta = await fetch(`${API_BASE}/auditoria?${parametros.toString()}`, {
+        const resposta = await fetch(`${API_BASE}/auth/admin/auditoria/logs?${parametros.toString()}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
