@@ -137,6 +137,45 @@ async function carregarPedidos(token) {
     }
 }
 
+// Chamado direto pelo clique em "Ver Laudo Técnico" nos cards de "Meus
+// Dispositivos": abre o PDF do laudo em uma nova aba, sem passar pelo modal
+// de texto (modal-laudo). O modal e as funções abrirLaudo/
+// configurarLinkLaudoPdf abaixo ficaram sem uso neste fluxo, mas foram
+// mantidas no arquivo caso o modal volte a ser usado em outro lugar.
+async function abrirLaudoPdfDireto(dispositivoId, token, botao) {
+    const textoOriginal = botao ? botao.textContent : null;
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = 'Gerando PDF...';
+    }
+
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/dados-laudo/${dispositivoId}/pdf`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!resposta.ok) {
+            mostrarMensagem('Não foi possível gerar o PDF do laudo.', 'erro');
+            return;
+        }
+
+        const blobPdf = await resposta.blob();
+        const urlPdf = URL.createObjectURL(blobPdf);
+        window.open(urlPdf, '_blank');
+        setTimeout(() => URL.revokeObjectURL(urlPdf), 60000);
+
+    } catch (erro) {
+        console.error('Erro ao baixar PDF do laudo:', erro);
+        mostrarMensagem('Erro de conexão ao baixar o PDF do laudo.', 'erro');
+    } finally {
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = textoOriginal;
+        }
+    }
+}
+
 async function abrirLaudo(dispositivoId, token) {
     const modal = document.getElementById('modal-laudo');
     const conteudo = document.getElementById('conteudo-laudo');
