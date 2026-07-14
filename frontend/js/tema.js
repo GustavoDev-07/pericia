@@ -1,10 +1,25 @@
 // ===== CONTROLE DE TEMA =====
 
 // aplica tema salvo ao carregar
+// Obs.: este script pode ser incluído no <head>, antes do <body> existir,
+// então aplicamos a classe no <html> imediatamente (sempre existe durante
+// o parsing) e sincronizamos no <body> assim que ele estiver disponível.
 (function () {
     const temaSalvo = localStorage.getItem('tema') || 'escuro';
-    document.body.classList.remove('claro', 'escuro');
-    document.body.classList.add(temaSalvo);
+
+    document.documentElement.classList.remove('claro', 'escuro');
+    document.documentElement.classList.add(temaSalvo);
+
+    function aplicarNoBody() {
+        document.body.classList.remove('claro', 'escuro');
+        document.body.classList.add(temaSalvo);
+    }
+
+    if (document.body) {
+        aplicarNoBody();
+    } else {
+        document.addEventListener('DOMContentLoaded', aplicarNoBody);
+    }
 })();
 
 // alternar tema
