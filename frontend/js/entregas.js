@@ -1,81 +1,44 @@
 // ==========================================================================
 // entregas.js
-// Lógica da tela "Gestão de Entregas": confirmar a entrega de um dispositivo
-// ao cliente após a perícia concluída, e reverter esse processo caso a
-// entrega tenha sido confirmada por engano.
+// Lógica da tela "Gestão de Entregas / Logística":
+//   1) Receber dispositivos que chegaram na empresa (aguardandoEnvio -> recebidoNaEmpresa)
+//   2) Confirmar a entrega de dispositivos com perícia concluída ao cliente (concluida -> devolvida)
+//   3) Reverter uma entrega confirmada por engano (devolvida -> concluida)
 //
-// IMPORTANTE — NENHUMA ALTERAÇÃO DE BACKEND OU CSS FOI FEITA AQUI, conforme
-// solicitado. Este arquivo assume que o backend expõe as rotas abaixo (elas
-// ainda precisam ser criadas):
+// Rotas usadas (todas já existem no backend depois do patch de rotas):
+//   GET /api/dispositivos/logistica/aguardando-recebimento  ?busca=
+//   GET /api/dispositivos/logistica/pendentes-entrega       ?busca=
+//   GET /api/dispositivos/logistica/entregues                ?busca=
+//   PUT /api/dispositivos/logistica/receber/:id               (já existia)
+//   PUT /api/dispositivos/logistica/devolver/:id               (já existia)
+//   PUT /api/dispositivos/logistica/reverter-entrega/:id       (nova)
 //
-//   GET  /api/usuario/perfil                                -> (PRECISA CRIAR
-//        no backend; era chamada sem o prefixo /api e sem o campo "role"
-//        garantido) usada aqui só para saber quem está logado.
-//
-//   GET  /api/dispositivos/entregas/pendentes                -> (PRECISA CRIAR)
-//        Lista os dispositivos com status = 'concluida' que ainda não foram
-//        entregues ao cliente (ex.: campo "entregue" = false/null, ou
-//        status !== 'devolvida' se esse status novo tiver sido adotado -
-//        confirmar com quem mexe no schema/sql). Aceita ?busca= para
-//        filtrar por cliente/tipo/id.
-//
-//   GET  /api/dispositivos/entregas/entregues                -> (PRECISA CRIAR)
-//        Lista os dispositivos já entregues (entregue = true, ou
-//        status === 'devolvida'), com data_entrega e o nome de quem
-//        confirmou a entrega. Aceita ?busca= para filtrar.
-//
-//   PUT  /api/dispositivos/logistica/devolver/:id             -> (JÁ EXISTE,
-//        rota compartilhada com quem mexe em dispositivos.js) Reaproveitada
-//        aqui para "confirmar entrega": o dispositivo concluído sai da
-//        empresa e volta para o cliente, o que bate com a semântica de
-//        "devolver". Corpo enviado: { responsavel_retirada, observacao }.
-//        ATENÇÃO: confirmar com quem mantém essa rota se o corpo aceito e o
-//        efeito colateral (status -> 'devolvida'?) são compatíveis com o
-//        que esta tela espera.
-//
-//   PUT  /api/dispositivos/logistica/receber/:id              -> (JÁ EXISTE)
-//        Reaproveitada aqui para "reverter entrega": desfazer uma entrega
-//        significa que o dispositivo volta a ficar sob custódia da empresa,
-//        o que bate com a semântica de "receber". Corpo enviado:
-//        { motivo_reversao }. ATENÇÃO: mesma ressalva acima - confirmar se
-//        o corpo/efeito colateral batem com o que esta tela espera; se
-//        "receber" nesse fluxo for exclusivo do recebimento inicial vindo
-//        do cliente (status 'aguardandoEnvio' -> 'recebidoNaEmpresa'), essa
-//        rota NÃO deve ser reaproveitada aqui e uma rota nova de reversão
-//        precisa ser criada em vez disso.
-//
-// SOBRE A PERMISSÃO ("sincronizar com o DB para ter permissão"):
-//   A verificação de permissão no front (checar o "role" vindo de
-//   /usuario/perfil) serve só para decidir o que mostrar na tela — ela é
-//   só um atalho de UI. Quem garante a segurança de verdade é o backend: as
-//   duas rotas de confirmar/reverter entrega precisam ficar protegidas com
-//   verificarToken + permitirCargos(['admin']) (mesmo padrão já usado em
-//   outras rotas administrativas do projeto, como
-//   /api/auth/admin/aprovar-perito/:id). Assim, mesmo que alguém tente
-//   chamar a rota diretamente sem passar pela tela, o servidor consulta o
-//   banco/token e barra quem não tem permissão. Este arquivo sempre trata a
-//   resposta 401/403 do servidor como a autoridade final, mesmo que a
-//   checagem de "role" no front já tenha liberado o botão.
+// PERMISSÃO: o backend libera essas rotas para os cargos 'logistica' e
+// 'admin' (permitirCargos(['logistica', 'admin'])). A checagem abaixo no
+// front foi alinhada com isso — antes só liberava para 'admin', e por
+// isso usuários com o cargo 'logistica' recebiam a mensagem de "sem
+// permissão" mesmo tendo acesso liberado no servidor. A checagem no front
+// é só um atalho de UI; a segurança real está nas rotas do backend.
 // ==========================================================================
 
- // API_BASE já é declarado globalmente por inicio.js, carregado antes desta
- // página. Uma segunda "const API_BASE" aqui causava
- // "SyntaxError: Identifier 'API_BASE' has already been declared", quebrando
- // a execução deste arquivo inteiro.
+// API_BASE já é declarado globalmente por inicio.js, carregado antes desta
+// página.
 
- document.addEventListener('DOMContentLoaded', () => {
-     const token = localStorage.getItem('token');
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
 
-     if (!token) {
-         exibirMensagem('Você precisa estar logado para acessar a gestão de entregas.', true);
-         window.location.href = 'login.html';
-         return;
-     }
+    if (!token) {
+        exibirMensagem('Você precisa estar logado para acessar a gestão de entregas.', true);
+        window.location.href = 'login.html';
+        return;
+    }
 
-     verificarPermissaoEntregas(token);
- });
+    verificarPermissaoEntregas(token);
+});
 
 // ===================== CONTROLE DE ACESSO =====================
+
+const CARGOS_PERMITIDOS = ['logistica', 'admin'];
 
 async function verificarPermissaoEntregas(token) {
     const verificando = document.getElementById('entregas-verificando-permissao');
@@ -101,10 +64,10 @@ async function verificarPermissaoEntregas(token) {
 
         verificando.style.display = 'none';
 
-        // A checagem abaixo é só para decidir o que mostrar na tela. A
-        // permissão de verdade é sempre revalidada pelo backend nas rotas
-        // de confirmar/reverter entrega (ver comentário no topo do arquivo).
-        if (role !== 'admin') {
+        // Checagem só para decidir o que mostrar na tela. A permissão de
+        // verdade é sempre revalidada pelo backend nas rotas de
+        // receber/devolver/reverter (ver comentário no topo do arquivo).
+        if (!CARGOS_PERMITIDOS.includes(role)) {
             document.getElementById('entregas-sem-permissao').style.display = 'block';
             document.getElementById('entregas-conteudo').style.display = 'none';
             return;
@@ -136,16 +99,155 @@ function obterRoleDoToken(token) {
 }
 
 function inicializarPagina(token) {
+    configurarFiltrosAguardandoRecebimento(token);
     configurarFiltrosPendentes(token);
     configurarFiltrosEntregues(token);
     configurarModalConfirmarEntrega(token);
     configurarModalReverterEntrega(token);
 
+    carregarAguardandoRecebimento(token);
     carregarPendentesEntrega(token);
     carregarJaEntregues(token);
 }
 
-// ===================== PENDENTES DE ENTREGA =====================
+// ===================== AGUARDANDO RECEBIMENTO (aguardandoEnvio -> recebidoNaEmpresa) =====================
+
+function configurarFiltrosAguardandoRecebimento(token) {
+    const busca = document.getElementById('filtro-busca-aguardando');
+
+    document.getElementById('btn-buscar-aguardando').addEventListener('click', () => {
+        carregarAguardandoRecebimento(token, busca.value.trim());
+    });
+
+    document.getElementById('btn-atualizar-aguardando').addEventListener('click', () => {
+        carregarAguardandoRecebimento(token, busca.value.trim());
+    });
+
+    busca.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Enter') {
+            evento.preventDefault();
+            carregarAguardandoRecebimento(token, busca.value.trim());
+        }
+    });
+}
+
+async function carregarAguardandoRecebimento(token, busca) {
+    const corpo = document.getElementById('corpo-tabela-aguardando');
+    const tabela = document.getElementById('tabela-aguardando');
+    const vazio = document.getElementById('aguardando-vazio');
+
+    try {
+        const query = busca ? `?busca=${encodeURIComponent(busca)}` : '';
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/aguardando-recebimento${query}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!resposta.ok) {
+            corpo.innerHTML = '';
+            tabela.style.display = 'none';
+            vazio.style.display = 'block';
+            vazio.textContent = 'Não foi possível carregar os dispositivos aguardando recebimento.';
+            return;
+        }
+
+        const dispositivos = await resposta.json();
+
+        if (!Array.isArray(dispositivos) || dispositivos.length === 0) {
+            corpo.innerHTML = '';
+            tabela.style.display = 'none';
+            vazio.style.display = 'block';
+            vazio.textContent = 'Nenhum dispositivo aguardando recebimento no momento.';
+            return;
+        }
+
+        vazio.style.display = 'none';
+        tabela.style.display = 'table';
+        corpo.innerHTML = '';
+
+        dispositivos.forEach(dispositivo => {
+            corpo.appendChild(criarLinhaAguardandoRecebimento(dispositivo, token));
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar dispositivos aguardando recebimento:', error);
+        tabela.style.display = 'none';
+        vazio.style.display = 'block';
+        vazio.textContent = 'Erro de conexão ao buscar os dispositivos aguardando recebimento.';
+    }
+}
+
+function criarLinhaAguardandoRecebimento(dispositivo, token) {
+    const tr = document.createElement('tr');
+    tr.dataset.id = dispositivo.id;
+
+    tr.innerHTML = `
+        <td class="disp-id"></td>
+        <td class="disp-tipo"></td>
+        <td class="disp-modelo"></td>
+        <td class="disp-cliente"></td>
+        <td class="disp-forma-entrega"></td>
+        <td class="disp-rastreio"></td>
+        <td class="disp-entrada"></td>
+        <td class="disp-acoes"></td>
+    `;
+
+    tr.querySelector('.disp-id').textContent = dispositivo.id ?? '—';
+    tr.querySelector('.disp-tipo').textContent = dispositivo.tipoDispositivo || '—';
+    tr.querySelector('.disp-modelo').textContent = dispositivo.modeloDescricao || '—';
+    tr.querySelector('.disp-cliente').textContent = dispositivo.nome_cliente || '—';
+    tr.querySelector('.disp-forma-entrega').textContent = dispositivo.formaEntrega || '—';
+    tr.querySelector('.disp-rastreio').textContent = dispositivo.codigoRastreio || '—';
+    tr.querySelector('.disp-entrada').textContent = dispositivo.data_entrada || '—';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-confirmar-recebimento';
+    btn.textContent = 'Confirmar Recebimento';
+    btn.addEventListener('click', () => {
+        confirmarRecebimento(dispositivo, token, btn);
+    });
+    tr.querySelector('.disp-acoes').appendChild(btn);
+
+    return tr;
+}
+
+async function confirmarRecebimento(dispositivo, token, btn) {
+    btn.disabled = true;
+
+    try {
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/receber/${dispositivo.id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const resultado = await resposta.json().catch(() => ({}));
+
+        if (!resposta.ok) {
+            exibirMensagem(resultado.erro || resultado.mensagem || 'Não foi possível confirmar o recebimento. Verifique se você tem permissão para esta ação.', true);
+            return;
+        }
+
+        exibirMensagem(resultado.mensagem || 'Recebimento confirmado com sucesso!', false);
+
+        const buscaAguardando = document.getElementById('filtro-busca-aguardando').value.trim();
+        carregarAguardandoRecebimento(token, buscaAguardando);
+
+    } catch (error) {
+        console.error('Erro ao confirmar recebimento:', error);
+        exibirMensagem('Erro de conexão ao confirmar o recebimento.', true);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// ===================== PENDENTES DE ENTREGA (concluida -> devolvida) =====================
 
 function configurarFiltrosPendentes(token) {
     const busca = document.getElementById('filtro-busca-pendentes');
@@ -173,7 +275,7 @@ async function carregarPendentesEntrega(token, busca) {
 
     try {
         const query = busca ? `?busca=${encodeURIComponent(busca)}` : '';
-        const resposta = await fetch(`${API_BASE}/dispositivos/entregas/pendentes${query}`, {
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/pendentes-entrega${query}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -230,8 +332,8 @@ function criarLinhaPendenteEntrega(dispositivo, token) {
     `;
 
     tr.querySelector('.disp-id').textContent = dispositivo.id ?? '—';
-    tr.querySelector('.disp-tipo').textContent = dispositivo.tipo_dispositivo || '—';
-    tr.querySelector('.disp-modelo').textContent = dispositivo.modelo_descricao || '—';
+    tr.querySelector('.disp-tipo').textContent = dispositivo.tipoDispositivo || '—';
+    tr.querySelector('.disp-modelo').textContent = dispositivo.modeloDescricao || '—';
     tr.querySelector('.disp-cliente').textContent = dispositivo.nome_cliente || '—';
     tr.querySelector('.disp-perito').textContent = dispositivo.nome_perito || '—';
     tr.querySelector('.disp-concluida-em').textContent = dispositivo.data_conclusao || '—';
@@ -248,7 +350,7 @@ function criarLinhaPendenteEntrega(dispositivo, token) {
     return tr;
 }
 
-// ===================== JÁ ENTREGUES (REVERSÃO) =====================
+// ===================== JÁ ENTREGUES (devolvida) — REVERSÃO =====================
 
 function configurarFiltrosEntregues(token) {
     const busca = document.getElementById('filtro-busca-entregues');
@@ -276,7 +378,7 @@ async function carregarJaEntregues(token, busca) {
 
     try {
         const query = busca ? `?busca=${encodeURIComponent(busca)}` : '';
-        const resposta = await fetch(`${API_BASE}/dispositivos/entregas/entregues${query}`, {
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/entregues${query}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -328,16 +430,14 @@ function criarLinhaJaEntregue(dispositivo, token) {
         <td class="disp-modelo"></td>
         <td class="disp-cliente"></td>
         <td class="disp-entregue-em"></td>
-        <td class="disp-confirmado-por"></td>
         <td class="disp-acoes"></td>
     `;
 
     tr.querySelector('.disp-id').textContent = dispositivo.id ?? '—';
-    tr.querySelector('.disp-tipo').textContent = dispositivo.tipo_dispositivo || '—';
-    tr.querySelector('.disp-modelo').textContent = dispositivo.modelo_descricao || '—';
+    tr.querySelector('.disp-tipo').textContent = dispositivo.tipoDispositivo || '—';
+    tr.querySelector('.disp-modelo').textContent = dispositivo.modeloDescricao || '—';
     tr.querySelector('.disp-cliente').textContent = dispositivo.nome_cliente || '—';
     tr.querySelector('.disp-entregue-em').textContent = dispositivo.data_entrega || '—';
-    tr.querySelector('.disp-confirmado-por').textContent = dispositivo.confirmado_por || '—';
 
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -369,12 +469,7 @@ function configurarModalConfirmarEntrega(token) {
         evento.preventDefault();
         if (!dispositivoSelecionadoParaEntrega) return;
 
-        const dados = {
-            responsavel_retirada: document.getElementById('input-responsavel-retirada').value.trim(),
-            observacao: document.getElementById('input-observacao-entrega').value.trim()
-        };
-
-        confirmarEntrega(dispositivoSelecionadoParaEntrega, dados, token);
+        confirmarEntrega(dispositivoSelecionadoParaEntrega, token);
     });
 }
 
@@ -386,7 +481,7 @@ function abrirModalConfirmarEntrega(dispositivo, token) {
     const erro = document.getElementById('erro-confirmar-entrega');
     const form = document.getElementById('form-confirmar-entrega');
 
-    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipo_dispositivo || 'dispositivo'} (${dispositivo.modelo_descricao || 'sem descrição'})`;
+    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipoDispositivo || 'dispositivo'} (${dispositivo.modeloDescricao || 'sem descrição'})`;
     erro.style.display = 'none';
     erro.textContent = '';
     form.reset();
@@ -394,35 +489,30 @@ function abrirModalConfirmarEntrega(dispositivo, token) {
     modal.style.display = 'block';
 }
 
-async function confirmarEntrega(dispositivo, dados, token) {
+async function confirmarEntrega(dispositivo, token) {
     const erro = document.getElementById('erro-confirmar-entrega');
     const btnConfirmar = document.getElementById('btn-confirmar-entrega-definitivo');
-
-    if (!dados.responsavel_retirada) {
-        erro.textContent = 'Informe o nome de quem retirou o dispositivo.';
-        erro.style.display = 'block';
-        return;
-    }
 
     btnConfirmar.disabled = true;
 
     try {
+        // A rota /logistica/devolver/:id não recebe corpo hoje (só atualiza
+        // status 'concluida' -> 'devolvida'). Se você quiser registrar
+        // responsavel_retirada/observacao, é preciso adicionar essas colunas
+        // e alterar a query dessa rota no backend — o front já está pronto
+        // para enviar esses dados quando o backend passar a aceitá-los.
         const resposta = await fetch(`${API_BASE}/dispositivos/logistica/devolver/${dispositivo.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
+            }
         });
 
         const resultado = await resposta.json().catch(() => ({}));
 
         if (!resposta.ok) {
-            // 401/403 aqui normalmente significa que o servidor recusou a
-            // permissão mesmo que o front tenha liberado o botão — é
-            // exatamente esse o ponto de sincronizar a permissão com o banco.
-            erro.textContent = resultado.mensagem || resultado.erro || 'Não foi possível confirmar a entrega. Verifique se você tem permissão para esta ação.';
+            erro.textContent = resultado.erro || resultado.mensagem || 'Não foi possível confirmar a entrega. Verifique se você tem permissão para esta ação.';
             erro.style.display = 'block';
             return;
         }
@@ -464,11 +554,7 @@ function configurarModalReverterEntrega(token) {
         evento.preventDefault();
         if (!dispositivoSelecionadoParaReversao) return;
 
-        const dados = {
-            motivo_reversao: document.getElementById('input-motivo-reversao').value.trim()
-        };
-
-        reverterEntrega(dispositivoSelecionadoParaReversao, dados, token);
+        reverterEntrega(dispositivoSelecionadoParaReversao, token);
     });
 }
 
@@ -480,7 +566,7 @@ function abrirModalReverterEntrega(dispositivo, token) {
     const erro = document.getElementById('erro-reverter-entrega');
     const form = document.getElementById('form-reverter-entrega');
 
-    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipo_dispositivo || 'dispositivo'} (${dispositivo.modelo_descricao || 'sem descrição'})`;
+    descricao.textContent = `#${dispositivo.id} — ${dispositivo.tipoDispositivo || 'dispositivo'} (${dispositivo.modeloDescricao || 'sem descrição'})`;
     erro.style.display = 'none';
     erro.textContent = '';
     form.reset();
@@ -488,32 +574,27 @@ function abrirModalReverterEntrega(dispositivo, token) {
     modal.style.display = 'block';
 }
 
-async function reverterEntrega(dispositivo, dados, token) {
+async function reverterEntrega(dispositivo, token) {
     const erro = document.getElementById('erro-reverter-entrega');
     const btnReverter = document.getElementById('btn-reverter-entrega-definitivo');
-
-    if (!dados.motivo_reversao) {
-        erro.textContent = 'Informe o motivo da reversão.';
-        erro.style.display = 'block';
-        return;
-    }
 
     btnReverter.disabled = true;
 
     try {
-        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/receber/${dispositivo.id}`, {
+        // Rota nova e exclusiva para reversão — não reaproveita mais
+        // /logistica/receber/:id, que é só para aguardandoEnvio -> recebidoNaEmpresa.
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/reverter-entrega/${dispositivo.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
+            }
         });
 
         const resultado = await resposta.json().catch(() => ({}));
 
         if (!resposta.ok) {
-            erro.textContent = resultado.mensagem || resultado.erro || 'Não foi possível reverter a entrega. Verifique se você tem permissão para esta ação.';
+            erro.textContent = resultado.erro || resultado.mensagem || 'Não foi possível reverter a entrega. Verifique se você tem permissão para esta ação.';
             erro.style.display = 'block';
             return;
         }
