@@ -1,4 +1,3 @@
-
 USE pericia;
 CREATE TABLE servico(
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -7,13 +6,7 @@ CREATE TABLE servico(
     endereco VARCHAR(250)
    
 );
-SELECT
-    nomeProduto,
-    numeroIdentificacao
-    endereco
-FROM
-    servico;
-    
+
 CREATE TABLE IF NOT EXISTS feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
