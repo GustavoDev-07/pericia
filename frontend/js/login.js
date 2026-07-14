@@ -1,24 +1,103 @@
-// ==========================================================================
-// login.js
-// Lógica de autenticação da tela de Login. Antes esse código vivia em
-// pericia.js (que tinha um conflito de merge não resolvido e quebrava a
-// página inteira). Agora fica isolado aqui, no arquivo com o nome certo.
-//
-// Rota real do backend: POST /api/auth/login  (montada em app.js como
-// app.use("/api/auth", rotasUsuarios))
-// ==========================================================================
+// ── Injeta CSS de extras automaticamente ────
+(function injectCSS() {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '../css/form-extras.css';
+  document.head.appendChild(link);
+})();
+ 
+// ── Botão "Voltar ao Início" ────────────────
+(function injectBackButton() {
+  const leftPanel = document.querySelector('.left-panel');
+  if (!leftPanel) return;
+  const btn = document.createElement('a');
+  btn.href = '../html/inicio.html';
+  btn.className = 'btn-voltar';
+  leftPanel.insertBefore(btn, leftPanel.firstChild);
+})();
+ 
+// ── Utilitários de validação ────────────────
+function mostrarErro(inputId, msg) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.classList.add('input-erro');
+  let span = input.parentElement.querySelector('.msg-erro');
+  if (!span) {
+    span = document.createElement('span');
+    span.className = 'msg-erro';
+    input.parentElement.appendChild(span);
+  }
+  span.textContent = msg;
+}
+ 
+function limparErro(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.classList.remove('input-erro');
+  const span = input.parentElement.querySelector('.msg-erro');
+  if (span) span.textContent = '';
+}
+ 
+// ── Validar campos do login ─────────────────
+function validarFormulario() {
+  limparErro('email');
+  limparErro('senha');
+  let valido = true;
+ 
+  const email = document.getElementById('email').value.trim();
+  if (!email) {
+    mostrarErro('email', 'E-mail obrigatório.');
+    valido = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    mostrarErro('email', 'E-mail inválido.');
+    valido = false;
+  }
+ 
+  const senha = document.getElementById('senha').value;
+  if (!senha) {
+    mostrarErro('senha', 'Senha obrigatória.');
+    valido = false;
+  } else if (senha.length < 6) {
+    mostrarErro('senha', 'Senha deve ter pelo menos 6 caracteres.');
+    valido = false;
+  }
+ 
+  return valido;
+}
+ 
+// ── Evento do botão LOGIN ───────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const btnLogin = document.querySelector('.btn-login');
+  if (!btnLogin) return;
+ 
+  btnLogin.addEventListener('click', () => {
+    if (validarFormulario()) {
+      // TODO: autenticar via backend (server.js)
+      alert('Login realizado com sucesso! Redirecionando...');
+      window.location.href = '../html/inicio.html';
+    }
+  });
+ 
+  // Limpa erro ao digitar
+  ['email', 'senha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => limparErro(id));
+  });
+});
+/* ============================================================
+   tema.js – Perícia Fiducia
+   Gerenciamento centralizado de tema claro/escuro.
+   Inclua este arquivo em TODAS as páginas do sistema.
+   ============================================================ */
 
-const API_BASE = "http://127.0.0.1:3000/api";
+(function () {
+    'use strict';
 
-async function loginUsuario(event) {
-    event.preventDefault();
-
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value;
-
-    if (!email || !senha) {
-        alert("Por favor, preencha todos os campos.");
-        return;
+    /* Aplica tema salvo imediatamente para evitar flash */
+    const temaSalvo = localStorage.getItem('tema') || 'escuro';
+    if (temaSalvo === 'claro') {
+        document.documentElement.classList.add('claro');
+        document.documentElement.classList.remove('escuro');
     }
 
     const payload = { email, senha };
