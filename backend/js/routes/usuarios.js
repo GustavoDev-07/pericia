@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
     try {
         const resultado = await executarQuery(query, [email]);
 
-        const usuarios = resultado ? resultado[0] : []; 
+        const usuarios = resultado ? resultado[0] : [];
 
         if (!usuarios || usuarios.length === 0) {
             return res.status(401).json({ mensagem: 'E-mail ou senha incorretos!' });
@@ -49,18 +49,18 @@ router.post('/login', async (req, res) => {
             {
                 id: usuarioEncontrado.id,
                 email: usuarioEncontrado.email,
-                role: usuarioEncontrado.role 
-            }, 
-            'SEGREDO_SUPER_SECRETO', 
+                role: usuarioEncontrado.role
+            },
+            'SEGREDO_SUPER_SECRETO',
             { expiresIn: '1h' }
         );
 
         await registrarLog(usuarioEncontrado.id, usuarioEncontrado.nome, "Login", "Usuário realizou login com sucesso.");
 
-        return res.json({ 
-            auth: true, 
-            token, 
-            usuario: { nome: usuarioEncontrado.nome, email: usuarioEncontrado.email } 
+        return res.json({
+            auth: true,
+            token,
+            usuario: { nome: usuarioEncontrado.nome, email: usuarioEncontrado.email }
         });
 
     } catch (erro) {
@@ -118,12 +118,12 @@ router.post('/cadastro', async (req, res) => {
         )
     `
 
-    
+
     try {
         const senhaOriginal = req.body.senha;
-        
+
         const senhaCriptografada = await bcrypt.hash(senhaOriginal, 12);
-        
+
         var usuario = [
             req.body.nome,
             req.body.email,
@@ -182,7 +182,7 @@ router.put('/candidatar-perito', verificarToken, async (req, res) => {
 
     try {
         await executarQuery(query, [idUsuario]);
-        return res.json({ mensagem: "Sua candidatura a perito foi enviada! Aguarde o retorno."});
+        return res.json({ mensagem: "Sua candidatura a perito foi enviada! Aguarde o retorno." });
     } catch (error) {
         return res.status(500).json({ erro: "Erro ao enviar candidatura." });
     }
@@ -284,11 +284,11 @@ router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['ad
 
     try {
         const result = await executarQuery(query, [dispositivoId]);
-        
+
         if (result.affectedRows === 0) {
             return res.status(400).json({ erro: "Dispositivo não encontrado ou já recebido." });
         }
-        
+
         return res.json({ mensagem: "Dispositivo bipado e recebido com sucesso! Já está na fila dos peritos." });
     } catch (error) {
         return res.status(500).json({ erro: "Erro interno no servidor." });
@@ -338,15 +338,21 @@ router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), a
     try {
         // Busca limite+1 registros para saber se existe próxima página, sem
         // precisar de um segundo SELECT COUNT(*) separado.
+        // OBS: limite/offset são interpolados direto na string (não como
+        // parâmetro preparado) porque o driver mysql2, ao usar .execute(),
+        // não aceita placeholders "?" em LIMIT/OFFSET — mesmo passando
+        // números. Isso é seguro aqui porque ambos já foram validados como
+        // inteiros acima (parseInt + Math.max/Math.min), nunca são a string
+        // crua vinda de req.query.
         const query = `
             SELECT id, usuarioId, usuarioNome AS usuario_nome, acao, detalhes AS descricao,
                    DATE_FORMAT(criadoEm, '%d/%m/%Y %H:%i') AS data_hora
             FROM logsAuditoria
             ${whereSql}
             ORDER BY id DESC
-            LIMIT ? OFFSET ?
+            LIMIT ${limite + 1} OFFSET ${offset}
         `;
-        const [linhas] = await executarQuery(query, [...params, limite + 1, offset]);
+        const [linhas] = await executarQuery(query, params);
 
         const temMais = linhas.length > limite;
         const eventos = linhas.slice(0, limite).map(linha => ({
@@ -393,7 +399,7 @@ router.put('/admin/auditoria/decidir-candidatura/:id', verificarToken, permitirC
     try {
         const [usuario] = await executarQuery("SELECT nome FROM usuarios WHERE id = ?", [usuarioAlvoId]);
         if (!usuario || usuario.length === 0) return res.status(404).json({ erro: "Usuário não encontrado." });
-        
+
         const nomeUsuarioAlvo = usuario[0].nome;
 
         if (acao.toLowerCase() === 'aprovar') {
