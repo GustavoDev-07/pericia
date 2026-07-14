@@ -151,6 +151,30 @@ router.post('/cadastro', async (req, res) => {
     }
 });
 
+// DELETE /api/auth/usuario/excluir-conta -> exclui a conta do usuário logado.
+// Observação: a tabela "dispositivos" tem FOREIGN KEY apontando para
+// "usuarios" com ON DELETE CASCADE (ver sql/cliente.sql), então excluir o
+// usuário também apaga em cascata os dispositivos/pedidos associados a ele.
+// Isso é irreversível — o frontend deve pedir confirmação explícita antes
+// de chamar esta rota.
+router.delete('/usuario/excluir-conta', verificarToken, async (req, res) => {
+    const idUsuario = req.usuario.id;
+
+    try {
+        const resultado = await executarQuery('DELETE FROM usuarios WHERE id = ?', [idUsuario]);
+        const linhasAfetadas = resultado?.affectedRows ?? (resultado[0] && resultado[0].affectedRows);
+
+        if (!linhasAfetadas) {
+            return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
+        }
+
+        return res.json({ mensagem: 'Conta excluída com sucesso.' });
+    } catch (erro) {
+        console.error('Erro ao excluir conta:', erro);
+        return res.status(500).json({ mensagem: 'Erro interno ao excluir a conta.' });
+    }
+});
+
 router.put('/candidatar-perito', verificarToken, async (req, res) => {
     const idUsuario = req.usuario.id;
 

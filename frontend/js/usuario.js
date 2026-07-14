@@ -248,6 +248,41 @@ function configurarModalLaudo() {
     }
 }
 
+function configurarExcluirConta(token) {
+    const btnExcluir = document.getElementById('btn-excluir-conta');
+    if (!btnExcluir) return;
+
+    btnExcluir.addEventListener('click', async () => {
+        const confirmou = confirm(
+            'Tem certeza que deseja excluir sua conta? Essa ação é PERMANENTE e também apaga todos os seus pedidos/dispositivos registrados. Não é possível desfazer.'
+        );
+        if (!confirmou) return;
+
+        try {
+            const resposta = await fetch(`${API_BASE}/auth/usuario/excluir-conta`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const resultado = await resposta.json();
+
+            if (!resposta.ok) {
+                mostrarMensagem(resultado.mensagem || 'Não foi possível excluir sua conta.', 'erro');
+                return;
+            }
+
+            localStorage.removeItem('token');
+            alert('Conta excluída com sucesso.');
+            window.location.href = 'inicio.html';
+        } catch (erro) {
+            console.error('Erro ao excluir conta:', erro);
+            mostrarMensagem('Não foi possível conectar ao servidor para excluir sua conta.', 'erro');
+        }
+    });
+}
+
 // ===================== INICIALIZAÇÃO =====================
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
@@ -261,4 +296,5 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarPedidos(token);
     configurarModalNovoPedido(token);
     configurarModalLaudo();
+    configurarExcluirConta(token);
 });
