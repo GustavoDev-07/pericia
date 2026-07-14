@@ -6,6 +6,7 @@ import executarQuery from "../db.js";
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import rateLimit from 'express-rate-limit';
+import { gerarLaudoPdf } from '../laudoPdf.js';
 
 const laudoLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
@@ -159,6 +160,46 @@ router.get('/dados-laudo/:id', verificarToken, permitirCargos(['cliente', 'perit
     } catch (error) {
         console.error("Erro ao buscar dados do laudo:", error);
         return res.status(500).json({ erro: "Erro interno ao buscar dados do laudo." });
+    }
+});
+
+// GET /dados-laudo/:id/pdf -> mesma consulta da rota acima, mas devolve o
+// laudo já formatado em PDF (mesmo modelo/escopo padrão usado na consulta
+// pública por protocolo + código). Continua exigindo login: só cliente
+// dono do dispositivo, o perito responsável ou admin podem acessar (a
+// checagem de "dono" já é feita pelo INNER JOIN + WHERE d.id abaixo, igual
+// à rota JSON original).
+router.get('/dados-laudo/:id/pdf', verificarToken, permitirCargos(['cliente', 'perito', 'admin']), async (req, res) => {
+    const dispositivoId = req.params.id;
+
+    const query = `
+        SELECT 
+            d.id AS dispositivoId,
+            d.protocolo,
+            d.tipoDispositivo,
+            d.modeloDescricao,
+            d.status,
+            d.laudo AS parecer_tecnico,
+            DATE_FORMAT(d.dataEntrada, '%d/%m/%Y') AS data_entrada,
+            u_cliente.nome AS nome_cliente,
+            u_perito.nome AS nome_perito
+        FROM dispositivos d
+        INNER JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
+        INNER JOIN usuarios u_perito ON d.peritoId = u_perito.id
+        WHERE d.id = ? AND d.status = 'concluida'
+    `;
+
+    try {
+        const [dados] = await executarQuery(query, [dispositivoId]);
+
+        if (dados.length === 0) {
+            return res.status(404).json({ erro: "Laudo não encontrado ou perícia ainda não concluída." });
+        }
+
+        return gerarLaudoPdf(dados[0], res);
+    } catch (error) {
+        console.error("Erro ao gerar PDF do laudo (autenticado):", error);
+        return res.status(500).json({ erro: "Erro interno ao gerar o PDF do laudo." });
     }
 });
 
@@ -479,7 +520,14 @@ router.post('/dados-laudo/:protocolo/verificar-codigo', laudoLimiter, async (req
         const resLaudo = await executarQuery(queryLaudo, [dispositivo.id]);
         const dadosLaudo = resLaudo && resLaudo[0] ? resLaudo[0][0] : null;
 
-        return res.json(dadosLaudo);
+        if (!dadosLaudo) {
+            return res.status(404).json({ erro: "Não foi possível montar o laudo para este protocolo." });
+        }
+
+        // O código de acesso já foi validado acima (bcrypt.compare). A
+        // partir daqui, a única forma de obter o conteúdo do laudo é este
+        // PDF — não existe mais retorno em JSON por esta rota pública.
+        return gerarLaudoPdf(dadosLaudo, res);
 
     } catch (error) {
         console.error("Erro na verificação pública de laudo:", error);
