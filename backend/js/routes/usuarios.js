@@ -195,11 +195,11 @@ router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async 
         );
 
         const [aguardando] = await executarQuery(
-            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'aguardando_perito'"
+            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'aguardandoPerito'"
         );
 
         const [emAnalise] = await executarQuery(
-            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'em_analise'"
+            "SELECT COUNT(*) AS total FROM dispositivos WHERE status = 'emAnalise'"
         );
 
         const [porTipo] = await executarQuery(
@@ -226,8 +226,8 @@ router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['ad
 
     const query = `
         UPDATE dispositivos 
-        SET status = 'recebido_na_empresa' 
-        WHERE id = ? AND status = 'aguardando_envio'
+        SET status = 'recebidoNaEmpresa' 
+        WHERE id = ? AND status = 'aguardandoEnvio'
     `;
 
     try {
