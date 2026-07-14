@@ -8,29 +8,41 @@
 // solicitado. Este arquivo assume que o backend expõe as rotas abaixo (elas
 // ainda precisam ser criadas):
 //
-//   GET  /usuario/perfil                                    -> (já existe,
-//        mas precisa passar a incluir o campo "role", igual já apontado em
-//        admin.js) usada aqui só para saber quem está logado.
+//   GET  /api/usuario/perfil                                -> (PRECISA CRIAR
+//        no backend; era chamada sem o prefixo /api e sem o campo "role"
+//        garantido) usada aqui só para saber quem está logado.
 //
 //   GET  /api/dispositivos/entregas/pendentes                -> (PRECISA CRIAR)
 //        Lista os dispositivos com status = 'concluida' que ainda não foram
-//        entregues ao cliente (ex.: campo "entregue" = false/null). Aceita
-//        ?busca= para filtrar por cliente/tipo/id.
+//        entregues ao cliente (ex.: campo "entregue" = false/null, ou
+//        status !== 'devolvida' se esse status novo tiver sido adotado -
+//        confirmar com quem mexe no schema/sql). Aceita ?busca= para
+//        filtrar por cliente/tipo/id.
 //
 //   GET  /api/dispositivos/entregas/entregues                -> (PRECISA CRIAR)
-//        Lista os dispositivos já entregues (entregue = true), com
-//        data_entrega e o nome de quem confirmou a entrega. Aceita
-//        ?busca= para filtrar.
+//        Lista os dispositivos já entregues (entregue = true, ou
+//        status === 'devolvida'), com data_entrega e o nome de quem
+//        confirmou a entrega. Aceita ?busca= para filtrar.
 //
-//   PUT  /api/dispositivos/entregas/confirmar/:id             -> (PRECISA CRIAR)
-//        Corpo: { responsavel_retirada, observacao }.
-//        Marca o dispositivo como entregue (ex.: entregue = true,
-//        data_entrega = NOW()) e registra o evento na auditoria.
+//   PUT  /api/dispositivos/logistica/devolver/:id             -> (JÁ EXISTE,
+//        rota compartilhada com quem mexe em dispositivos.js) Reaproveitada
+//        aqui para "confirmar entrega": o dispositivo concluído sai da
+//        empresa e volta para o cliente, o que bate com a semântica de
+//        "devolver". Corpo enviado: { responsavel_retirada, observacao }.
+//        ATENÇÃO: confirmar com quem mantém essa rota se o corpo aceito e o
+//        efeito colateral (status -> 'devolvida'?) são compatíveis com o
+//        que esta tela espera.
 //
-//   PUT  /api/dispositivos/entregas/reverter/:id               -> (PRECISA CRIAR)
-//        Corpo: { motivo_reversao }.
-//        Desfaz a entrega (entregue = false, data_entrega = NULL) e
-//        registra o evento na auditoria.
+//   PUT  /api/dispositivos/logistica/receber/:id              -> (JÁ EXISTE)
+//        Reaproveitada aqui para "reverter entrega": desfazer uma entrega
+//        significa que o dispositivo volta a ficar sob custódia da empresa,
+//        o que bate com a semântica de "receber". Corpo enviado:
+//        { motivo_reversao }. ATENÇÃO: mesma ressalva acima - confirmar se
+//        o corpo/efeito colateral batem com o que esta tela espera; se
+//        "receber" nesse fluxo for exclusivo do recebimento inicial vindo
+//        do cliente (status 'aguardandoEnvio' -> 'recebidoNaEmpresa'), essa
+//        rota NÃO deve ser reaproveitada aqui e uma rota nova de reversão
+//        precisa ser criada em vez disso.
 //
 // SOBRE A PERMISSÃO ("sincronizar com o DB para ter permissão"):
 //   A verificação de permissão no front (checar o "role" vindo de
@@ -66,7 +78,7 @@ async function verificarPermissaoEntregas(token) {
     const verificando = document.getElementById('entregas-verificando-permissao');
 
     try {
-        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
+        const resposta = await fetch(`${API_BASE}/usuario/perfil`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -392,7 +404,7 @@ async function confirmarEntrega(dispositivo, dados, token) {
     btnConfirmar.disabled = true;
 
     try {
-        const resposta = await fetch(`${API_BASE}/dispositivos/entregas/confirmar/${dispositivo.id}`, {
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/devolver/${dispositivo.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -486,7 +498,7 @@ async function reverterEntrega(dispositivo, dados, token) {
     btnReverter.disabled = true;
 
     try {
-        const resposta = await fetch(`${API_BASE}/dispositivos/entregas/reverter/${dispositivo.id}`, {
+        const resposta = await fetch(`${API_BASE}/dispositivos/logistica/receber/${dispositivo.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,

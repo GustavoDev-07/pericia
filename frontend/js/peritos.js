@@ -13,7 +13,7 @@
 // solicitado. Este arquivo usa apenas rotas que já existem no backend atual
 // (backend/js/routes/dispositivos.js):
 //
-//   GET  /usuario/perfil                              -> dados do usuário logado (mesmo padrão já usado em inicio.js/admin.js/entregas.js), usado aqui só para saber a role de quem está logado.
+//   GET  /api/usuario/perfil                          -> dados do usuário logado (PRECISA CRIAR no backend; mesmo padrão usado em inicio.js/admin.js/entregas.js), usado aqui só para saber a role de quem está logado.
 //   GET  /api/dispositivos/disponiveis                 -> (já existe) dispositivos recebidos na empresa e sem perito.
 //   PUT  /api/dispositivos/assumir-dispositivos/:id     -> (já existe) aceita/assume o dispositivo. Aceita multipart/form-data com um campo opcional "foto".
 //   GET  /api/dispositivos/meus-casos                   -> (já existe) dispositivos que o perito logado já assumiu e estão em_analise.
@@ -59,7 +59,7 @@ async function verificarPermissaoPerito(token) {
     const verificando = document.getElementById('peritos-verificando-permissao');
 
     try {
-        const resposta = await fetch('https://pericia-backend.up.railway.app/usuario/perfil', {
+        const resposta = await fetch(`${API_BASE}/usuario/perfil`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
