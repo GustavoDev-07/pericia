@@ -1,9 +1,8 @@
-/* ============================================
-   peritos.css – Perícia Fiducia
-   peritos.html ainda não tem marcação/conteúdo definido,
-   então por enquanto só aplicamos o fundo/tipografia base
-   para já nascer consistente com o resto do site.
-   ============================================ */
+/* ============================================================
+   peritos.css - Área do Perito - Perícia Fiducia
+   Reaproveita as variáveis de cor/tipografia definidas em
+   inicio.css (mesmo padrão visual usado em admin.css e usuario.css).
+   ============================================================ */
 
 *, *::before, *::after {
     margin: 0;
@@ -13,9 +12,384 @@
 
 body {
     min-height: 100vh;
-    font-family: 'Nunito', sans-serif;
-    background:
-        radial-gradient(circle at 92% 8%, rgba(239, 78, 89, 0.10), transparent 26%),
-        #091120;
-    color: #eaf1ff;
+    font-family: var(--font-body);
+    color: var(--clr-text);
+}
+
+/* ============================================================
+   ESTRUTURA GERAL DA PÁGINA
+   ============================================================ */
+#peritos-main {
+    width: min(100%, var(--container));
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    min-height: calc(100vh - 76px);
+}
+
+#peritos-main > h1 {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--clr-text);
+    margin-bottom: 8px;
+}
+
+#peritos-main > p {
+    color: var(--clr-text-muted);
+    font-size: 0.98rem;
+    max-width: 820px;
+    margin-bottom: 28px;
+}
+
+/* ── Mensagem de status ─────────────────────────── */
+#mensagem-status {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin-bottom: 20px;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    display: none;
+}
+
+#mensagem-status:not(:empty) { display: block; }
+
+/* ── Estados de permissão ────────────────────────── */
+#peritos-verificando-permissao {
+    color: var(--clr-text-muted);
+    font-style: italic;
+    padding: 18px 0;
+}
+
+#peritos-sem-permissao {
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: var(--radius);
+    background: rgba(239, 78, 89, 0.08);
+    border: 1px solid rgba(239, 78, 89, 0.3);
+    color: var(--clr-red-soft);
+    font-weight: 600;
+}
+
+/* ============================================================
+   SEÇÕES (Dispositivos Disponíveis / Meus Casos)
+   ============================================================ */
+#peritos-conteudo section { margin-top: 8px; }
+
+#peritos-conteudo h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    margin-bottom: 6px;
+}
+
+#peritos-conteudo section > p {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    max-width: 820px;
+    margin-bottom: 20px;
+}
+
+#peritos-conteudo hr {
+    border: none;
+    border-top: 1px solid var(--clr-cyan-border);
+    margin: 44px 0;
+}
+
+#btn-atualizar-disponiveis,
+#btn-atualizar-meus-casos {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-cyan) 0%, #00a8a0 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 22px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+#btn-atualizar-disponiveis:hover,
+#btn-atualizar-meus-casos:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cyan);
+}
+
+#disponiveis-vazio,
+#meus-casos-vazio {
+    color: var(--clr-text-muted);
+    font-style: italic;
+    padding: 18px 0;
+}
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    box-shadow: var(--shadow-soft);
+}
+
+thead { background: rgba(0, 217, 208, 0.08); }
+body.claro thead { background: rgba(0, 150, 150, 0.08); }
+
+th {
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-text-soft);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--clr-cyan-border);
+}
+
+td {
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: var(--clr-text-soft);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+
+body.claro td { border-bottom-color: rgba(15, 27, 50, 0.06); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0, 217, 208, 0.04); }
+
+td:first-child {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--clr-cyan);
+}
+
+/* Botões de ação criados dinamicamente dentro das tabelas
+   ("Aceitar Dispositivo" / "Finalizar Perícia / Registrar Laudo") */
+td button {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, #16c26b 0%, #0f9e57 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform var(--transition), opacity var(--transition);
+}
+
+td button:hover {
+    transform: translateY(-2px);
+    opacity: 0.92;
+}
+
+/* ============================================================
+   MODAIS (Aceitar Dispositivo / Finalizar Perícia)
+   ============================================================ */
+#modal-aceitar-dispositivo,
+#modal-finalizar-pericia {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 10, 20, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#modal-aceitar-dispositivo > div,
+#modal-finalizar-pericia > div {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    background: var(--clr-panel-strong);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hero);
+    padding: 36px 34px;
+    font-family: var(--font-body);
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+#modal-aceitar-dispositivo h2,
+#modal-finalizar-pericia h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--clr-white);
+    margin: 6px 0 18px;
+    padding-right: 30px;
+}
+
+body.claro #modal-aceitar-dispositivo h2,
+body.claro #modal-finalizar-pericia h2 { color: var(--clr-dark-text); }
+
+#modal-aceitar-dispositivo p,
+#modal-finalizar-pericia p {
+    color: var(--clr-text-soft);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+#btn-fechar-aceitar,
+#btn-fechar-finalizar {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--clr-red-deep);
+    color: var(--clr-red-soft);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+#btn-fechar-aceitar:hover,
+#btn-fechar-finalizar:hover { background: rgba(239, 78, 89, 0.10); }
+
+/* ── Formulários dos modais ─────────────────────── */
+#form-aceitar-dispositivo label,
+#form-finalizar-pericia label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin-bottom: 6px;
+}
+
+#form-aceitar-dispositivo input[type="file"],
+#form-finalizar-pericia select,
+#form-finalizar-pericia textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--clr-text);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+body.claro #form-aceitar-dispositivo input[type="file"],
+body.claro #form-finalizar-pericia select,
+body.claro #form-finalizar-pericia textarea {
+    background: #ffffff;
+    color: var(--clr-dark-text);
+}
+
+#form-aceitar-dispositivo input[type="file"]:focus,
+#form-finalizar-pericia select:focus,
+#form-finalizar-pericia textarea:focus {
+    border-color: var(--clr-cyan);
+    box-shadow: 0 0 0 3px rgba(0, 217, 208, 0.14);
+}
+
+#form-finalizar-pericia textarea { min-height: 160px; margin-top: 4px; }
+#form-finalizar-pericia select { margin-top: 4px; }
+
+#erro-aceitar-dispositivo,
+#erro-finalizar-pericia {
+    background: rgba(239, 78, 89, 0.10);
+    border: 1px solid rgba(239, 78, 89, 0.30);
+    color: var(--clr-red-soft);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin: 14px 0;
+}
+
+#btn-aceitar-definitivo,
+#btn-finalizar-definitivo {
+    width: 100%;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-red) 0%, #ff6b67 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 13px 0;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+#btn-aceitar-definitivo:hover,
+#btn-finalizar-definitivo:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hero);
+}
+
+#btn-aceitar-definitivo:disabled,
+#btn-finalizar-definitivo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+@media (max-width: 768px) {
+    #peritos-main { padding: 32px 16px 64px; }
+
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    tbody tr {
+        margin-bottom: 16px;
+        border: 1px solid var(--clr-cyan-border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+    td {
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+        padding-left: 46%;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+    }
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 16px;
+        width: 40%;
+        font-weight: 700;
+        color: var(--clr-text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+}
+
+@media (max-width: 640px) {
+    #modal-aceitar-dispositivo > div,
+    #modal-finalizar-pericia > div { padding: 28px 22px; }
 }
