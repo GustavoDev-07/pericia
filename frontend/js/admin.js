@@ -253,6 +253,11 @@ function criarCardCandidatura(candidato, token) {
         <p><strong>Nome:</strong> <span class="candidatura-nome"></span></p>
         <p><strong>E-mail:</strong> <span class="candidatura-email"></span></p>
         <div class="candidatura-acoes">
+            <label for="cargo-candidatura-${candidato.id}" class="candidatura-cargo-label">Aprovar como:</label>
+            <select id="cargo-candidatura-${candidato.id}" class="select-cargo-candidatura">
+                <option value="perito">Perito</option>
+                <option value="logistica">Logística</option>
+            </select>
             <button type="button" class="btn-aprovar-perito">Aprovar</button>
             <button type="button" class="btn-recusar-perito">Recusar</button>
         </div>
@@ -261,21 +266,26 @@ function criarCardCandidatura(candidato, token) {
     card.querySelector('.candidatura-nome').textContent = candidato.nome || '—';
     card.querySelector('.candidatura-email').textContent = candidato.email || '—';
 
+    const selectCargo = card.querySelector('.select-cargo-candidatura');
+
     card.querySelector('.btn-aprovar-perito').addEventListener('click', () => {
-        decidirCandidatura(candidato.id, 'aprovar', token, card);
+        decidirCandidatura(candidato.id, 'aprovar', token, card, selectCargo.value);
     });
 
     card.querySelector('.btn-recusar-perito').addEventListener('click', () => {
-        decidirCandidatura(candidato.id, 'recusar', token, card);
+        decidirCandidatura(candidato.id, 'recusar', token, card, selectCargo.value);
     });
 
     return card;
 }
 
-async function decidirCandidatura(idCandidato, decisao, token, card) {
+async function decidirCandidatura(idCandidato, decisao, token, card, cargoDesejado) {
+    const cargoEscolhido = cargoDesejado || 'perito';
+    const rotuloCargo = cargoEscolhido === 'logistica' ? 'logística' : 'perito';
+
     const confirmar = confirm(
         decisao === 'aprovar'
-            ? 'Confirma a aprovação deste candidato a perito?'
+            ? `Confirma a aprovação deste candidato como ${rotuloCargo}?`
             : 'Confirma a recusa desta candidatura?'
     );
     if (!confirmar) return;
@@ -289,7 +299,7 @@ async function decidirCandidatura(idCandidato, decisao, token, card) {
             },
             body: JSON.stringify({
                 acao: decisao, // 'aprovar' | 'recusar'
-                cargoDesejado: 'perito'
+                cargoDesejado: cargoEscolhido // 'perito' | 'logistica' — escolhido pelo admin no card
             })
         });
 
