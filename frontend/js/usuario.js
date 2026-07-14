@@ -167,10 +167,46 @@ async function abrirLaudo(dispositivoId, token) {
             <p><strong>Perito responsável:</strong> ${dados.nome_perito || '—'}</p>
             <p><strong>Parecer técnico:</strong><br>${dados.parecer_tecnico || 'Sem parecer registrado.'}</p>
         `;
+
+        configurarLinkLaudoPdf(dispositivoId, token);
     } catch (erro) {
         console.error('Erro ao buscar laudo:', erro);
         conteudo.textContent = 'Não foi possível conectar ao servidor para carregar o laudo.';
     }
+}
+
+// O link de PDF não pode usar apenas href com a rota autenticada, porque
+// uma tag <a> normal não envia o header Authorization. Por isso o clique
+// dispara um fetch com o token, e só então abrimos o PDF já baixado.
+function configurarLinkLaudoPdf(dispositivoId, token) {
+    const link = document.getElementById('link-laudo-pdf');
+    if (!link) return;
+
+    link.style.display = '';
+    link.onclick = async (evento) => {
+        evento.preventDefault();
+
+        try {
+            const resposta = await fetch(`${API_BASE}/dispositivos/dados-laudo/${dispositivoId}/pdf`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!resposta.ok) {
+                mostrarMensagem('Não foi possível gerar o PDF do laudo.', 'erro');
+                return;
+            }
+
+            const blobPdf = await resposta.blob();
+            const urlPdf = URL.createObjectURL(blobPdf);
+            window.open(urlPdf, '_blank');
+            setTimeout(() => URL.revokeObjectURL(urlPdf), 60000);
+
+        } catch (erro) {
+            console.error('Erro ao baixar PDF do laudo:', erro);
+            mostrarMensagem('Erro de conexão ao baixar o PDF do laudo.', 'erro');
+        }
+    };
 }
 
 // ===================== MODAL: NOVO PEDIDO =====================
