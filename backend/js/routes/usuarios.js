@@ -203,7 +203,7 @@ router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async 
         );
 
         const [porTipo] = await executarQuery(
-            "SELECT tipoDispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipoDispositivo"
+            "SELECT tipoDispositivo AS tipo_dispositivo, COUNT(*) AS quantidade FROM dispositivos GROUP BY tipoDispositivo"
         );
 
         return res.json({
@@ -220,6 +220,58 @@ router.get('/admin/dashboard', verificarToken, permitirCargos(['admin']), async 
         return res.status(500).json({ erro: "Erro interno ao gerar dados do painel." });
     }
 });
+
+// GET /api/auth/admin/dispositivos -> lista todos os dispositivos do sistema
+// para o painel admin, com filtro opcional por status (?status=emAnalise etc.).
+// A coluna "localizacao" não existe na tabela dispositivos hoje — é derivada
+// aqui a partir do "status" como aproximação (ver PENDÊNCIA no admin.js: para
+// um valor real de localização física seria necessário adicionar essa coluna
+// no schema).
+router.get('/admin/dispositivos', verificarToken, permitirCargos(['admin']), async (req, res) => {
+    const { status } = req.query;
+
+    let query = `
+        SELECT 
+            d.id,
+            d.tipoDispositivo AS tipo_dispositivo,
+            d.modeloDescricao AS modelo_descricao,
+            d.status,
+            u_cliente.nome AS nome_cliente,
+            u_perito.nome AS nome_perito
+        FROM dispositivos d
+        INNER JOIN usuarios u_cliente ON d.usuarioId = u_cliente.id
+        LEFT JOIN usuarios u_perito ON d.peritoId = u_perito.id
+    `;
+    const params = [];
+
+    if (status) {
+        query += ' WHERE d.status = ?';
+        params.push(status);
+    }
+
+    query += ' ORDER BY d.dataEntrada DESC';
+
+    try {
+        const [dispositivos] = await executarQuery(query, params);
+
+        const comLocalizacao = dispositivos.map(d => ({
+            ...d,
+            localizacao: derivarLocalizacao(d.status)
+        }));
+
+        return res.json(comLocalizacao);
+    } catch (error) {
+        console.error("Erro ao buscar dispositivos (admin):", error);
+        return res.status(500).json({ erro: "Erro interno ao buscar dispositivos." });
+    }
+});
+
+// Aproximação de localização física a partir do status do dispositivo.
+function derivarLocalizacao(status) {
+    if (status === 'aguardandoEnvio') return 'com_cliente';
+    if (status === 'devolvida') return 'com_cliente';
+    return 'empresa'; // recebidoNaEmpresa, aguardandoPerito, emAnalise, concluida
+}
 
 router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['admin']), async (req, res) => {
     const dispositivoId = req.params.id;
@@ -243,20 +295,83 @@ router.put('/admin/receber-dispositivo/:id', verificarToken, permitirCargos(['ad
     }
 });
 
+// GET /api/auth/admin/auditoria/logs?tipo=&busca=&pagina=&limite=
+// PENDÊNCIA (documentada, fora do escopo deste fix): a coluna "acao" da
+// tabela logsAuditoria só recebe hoje os textos "Login", "Promoção de
+// Cargo" e "Candidatura Recusada" (ver registrarLog() em usuarios.js). As
+// rotas de dispositivos.js (cadastro, entrada na empresa, perito assumindo
+// caso, perícia finalizada) ainda não chamam registrarLog() nenhuma vez —
+// então os filtros "dispositivo_cadastrado", "dispositivo_entrada_empresa",
+// "dispositivo_assumido" e "pericia_finalizada" do dropdown do admin.js não
+// vão retornar nada até essas chamadas serem adicionadas em dispositivos.js.
 router.get('/admin/auditoria/logs', verificarToken, permitirCargos(['admin']), async (req, res) => {
+    const MAPA_TIPO_PARA_ACAO = {
+        login: 'Login',
+        perito_aprovado: 'Promoção de Cargo',
+        perito_recusado: 'Candidatura Recusada'
+        // dispositivo_cadastrado, dispositivo_entrada_empresa,
+        // dispositivo_assumido, pericia_finalizada: sem correspondência
+        // ainda (ver PENDÊNCIA acima).
+    };
+
+    const tipo = req.query.tipo || '';
+    const busca = (req.query.busca || '').trim();
+    const pagina = Math.max(1, parseInt(req.query.pagina, 10) || 1);
+    const limite = Math.min(100, Math.max(1, parseInt(req.query.limite, 10) || 20));
+    const offset = (pagina - 1) * limite;
+
+    let where = [];
+    let params = [];
+
+    if (tipo && MAPA_TIPO_PARA_ACAO[tipo]) {
+        where.push('acao = ?');
+        params.push(MAPA_TIPO_PARA_ACAO[tipo]);
+    }
+
+    if (busca) {
+        where.push('(usuarioNome LIKE ? OR detalhes LIKE ?)');
+        params.push(`%${busca}%`, `%${busca}%`);
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
     try {
+        // Busca limite+1 registros para saber se existe próxima página, sem
+        // precisar de um segundo SELECT COUNT(*) separado.
         const query = `
-            SELECT id, usuarioId AS usuarioId, usuarioNome AS usuarioNome, acao, detalhes, 
-                   DATE_FORMAT(criadoEm, '%d/%m/%Y %H:%i') AS criadoEm 
-            FROM logsAuditoria ORDER BY id DESC LIMIT 100
+            SELECT id, usuarioId, usuarioNome AS usuario_nome, acao, detalhes AS descricao,
+                   DATE_FORMAT(criadoEm, '%d/%m/%Y %H:%i') AS data_hora
+            FROM logsAuditoria
+            ${whereSql}
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
         `;
-        const [logs] = await executarQuery(query);
-        return res.json(logs);
+        const [linhas] = await executarQuery(query, [...params, limite + 1, offset]);
+
+        const temMais = linhas.length > limite;
+        const eventos = linhas.slice(0, limite).map(linha => ({
+            ...linha,
+            tipo: acaoParaTipo(linha.acao)
+        }));
+
+        return res.json({ eventos, temMais });
     } catch (error) {
+        console.error("Erro ao buscar logs de auditoria:", error);
         return res.status(500).json({ erro: "Erro ao buscar logs de auditoria." });
     }
 });
 
+// Caminho inverso do MAPA_TIPO_PARA_ACAO, usado só para preencher o campo
+// "tipo" de cada evento na resposta (o admin.js usa isso para reformatar o
+// rótulo exibido via formatarTipoEvento()).
+function acaoParaTipo(acao) {
+    const mapa = {
+        'Login': 'login',
+        'Promoção de Cargo': 'perito_aprovado',
+        'Candidatura Recusada': 'perito_recusado'
+    };
+    return mapa[acao] || null;
+}
 router.get('/admin/auditoria/candidaturas', verificarToken, permitirCargos(['admin']), async (req, res) => {
     try {
         const query = "SELECT id, nome, email, role AS cargoAtual, statusAprovacao AS statusAprovacao FROM usuarios WHERE statusAprovacao = 'pendente'";
