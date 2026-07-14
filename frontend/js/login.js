@@ -65,6 +65,38 @@ function validarFormulario() {
   return valido;
 }
  
+// ── Envio do login ao backend ───────────────
+const API_BASE = 'https://pericia-backend.up.railway.app/api';
+
+async function enviarLogin() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+
+  const payload = { email, senha };
+
+  try {
+    const resposta = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const resultado = await resposta.json();
+
+    if (resposta.ok && resultado.token) {
+      localStorage.setItem('token', resultado.token);
+      localStorage.setItem('usuarioLogado', JSON.stringify(resultado.usuario));
+      alert('Login realizado com sucesso! Redirecionando...');
+      window.location.href = '../html/inicio.html';
+    } else {
+      alert(resultado.mensagem || 'E-mail ou senha incorretos.');
+    }
+  } catch (erro) {
+    console.error('Erro na comunicação com a API de login:', erro);
+    alert('Não foi possível conectar ao servidor. Tente novamente mais tarde.');
+  }
+}
+
 // ── Evento do botão LOGIN ───────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const btnLogin = document.querySelector('.btn-login');
@@ -72,9 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
  
   btnLogin.addEventListener('click', () => {
     if (validarFormulario()) {
-      // TODO: autenticar via backend (server.js)
-      alert('Login realizado com sucesso! Redirecionando...');
-      window.location.href = '../html/inicio.html';
+      enviarLogin();
     }
   });
  

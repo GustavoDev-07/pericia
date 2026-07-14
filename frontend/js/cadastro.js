@@ -158,6 +158,45 @@ function validarFormulario() {
   return valido;
 }
 
+// ── Envio do cadastro ao backend ────────────
+const API_BASE = 'https://pericia-backend.up.railway.app/api';
+
+async function enviarCadastro() {
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const dataNascimento = document.getElementById('data').value;
+  const cpfCnpj = document.getElementById('cpf').value.trim();
+  const senha = document.getElementById('senha').value;
+
+  const payload = {
+    nome,
+    email,
+    dataNascimento,
+    cpfCnpj,
+    senha
+  };
+
+  try {
+    const resposta = await fetch(`${API_BASE}/auth/cadastro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const resultado = await resposta.json();
+
+    if (resposta.ok && resultado.insertId) {
+      alert('Cadastro realizado com sucesso! Redirecionando para o login...');
+      window.location.href = '../html/login.html';
+    } else {
+      alert(resultado.mensagem || 'Não foi possível concluir o cadastro.');
+    }
+  } catch (erro) {
+    console.error('Erro na comunicação com a API de cadastro:', erro);
+    alert('Não foi possível conectar ao servidor. Tente novamente mais tarde.');
+  }
+}
+
 // ── Evento do botão REGISTRAR ───────────────
 document.addEventListener('DOMContentLoaded', () => {
   const btnRegistrar = document.getElementById('registrar');
@@ -165,9 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnRegistrar.addEventListener('click', () => {
     if (validarFormulario()) {
-      // TODO: enviar dados ao backend (server.js)
-      alert('Cadastro realizado com sucesso! Redirecionando para o login...');
-      window.location.href = '../html/login.html';
+      enviarCadastro();
     }
   });
 
