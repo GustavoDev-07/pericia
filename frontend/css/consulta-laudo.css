@@ -1,0 +1,119 @@
+/* ============================================================
+   consulta-laudo.css - Consultar Laudo - Pericia Fiducia
+   Reaproveita as variaveis de cor/tipografia definidas em inicio.css
+   ============================================================ */
+
+#consulta-laudo-main {
+    width: min(100%, 640px);
+    margin: 0 auto;
+    padding: 64px 24px 120px;
+    min-height: calc(100vh - 76px);
+}
+
+#consulta-laudo-main > h1 {
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--clr-text);
+    margin-bottom: 10px;
+}
+
+#consulta-laudo-main > p {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+#form-consultar-laudo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 32px;
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+#form-consultar-laudo label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-text-soft);
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+#form-consultar-laudo input[type="text"] {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--clr-text);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--clr-cyan-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+body.claro #form-consultar-laudo input[type="text"] {
+    background: rgba(15, 27, 50, 0.03);
+}
+
+#form-consultar-laudo input[type="text"]:focus {
+    border-color: var(--clr-cyan);
+}
+
+#form-consultar-laudo input[type="text"]::placeholder {
+    color: var(--clr-text-muted);
+}
+
+#btn-consultar-laudo {
+    margin-top: 22px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    color: var(--clr-white);
+    background: linear-gradient(135deg, var(--clr-cyan) 0%, #00a8a0 100%);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 13px 0;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+#btn-consultar-laudo:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cyan);
+}
+
+#consulta-laudo-status {
+    margin-top: 20px;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--clr-panel);
+    border: 1px solid var(--clr-cyan-border);
+    color: var(--clr-text-soft);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+#consulta-laudo-status.erro {
+    background: rgba(239, 78, 89, 0.08);
+    border-color: rgba(239, 78, 89, 0.3);
+    color: var(--clr-red-soft);
+}
+
+#consulta-laudo-status.sucesso {
+    background: rgba(0, 217, 208, 0.08);
+    border-color: var(--clr-cyan-border);
+    color: var(--clr-cyan);
+}
+
+@media (max-width: 768px) {
+    #consulta-laudo-main { padding: 40px 16px 80px; }
+    #form-consultar-laudo { padding: 24px; }
+}
