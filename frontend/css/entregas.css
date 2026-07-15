@@ -81,6 +81,7 @@
 }
 
 /* ===== FILTROS ===== */
+#aguardando-recebimento-filtros,
 #pendentes-entrega-filtros,
 #ja-entregues-filtros {
     display: flex;
@@ -90,6 +91,7 @@
     margin-bottom: 20px;
 }
 
+#aguardando-recebimento-filtros,
 #pendentes-entrega-filtros label,
 #ja-entregues-filtros label {
     font-size: 0.85rem;
@@ -97,6 +99,7 @@
     color: var(--clr-text-soft);
 }
 
+#aguardando-recebimento-filtros,
 #pendentes-entrega-filtros input[type="text"],
 #ja-entregues-filtros input[type="text"] {
     font-family: var(--font-body);
@@ -112,9 +115,11 @@
     transition: border-color var(--transition);
 }
 
+#aguardando-recebimento-filtros,
 #pendentes-entrega-filtros input[type="text"]:focus,
 #ja-entregues-filtros input[type="text"]:focus { border-color: var(--clr-cyan); }
 
+#aguardando-recebimento-filtros,
 #pendentes-entrega-filtros button,
 #ja-entregues-filtros button {
     font-family: var(--font-display);

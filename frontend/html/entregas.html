@@ -94,10 +94,13 @@
                 <p>Dispositivos já cadastrados pelo cliente, mas ainda não recebidos fisicamente pela empresa. Confirme
                     o recebimento para liberar o dispositivo para a fila dos peritos.</p>
 
-                <input type="text" id="filtro-busca-aguardando"
-                    placeholder="Buscar por cliente, protocolo ou modelo...">
-                <button type="button" id="btn-buscar-aguardando">Buscar</button>
-                <button type="button" id="btn-atualizar-aguardando">Atualizar Lista</button>
+                <div id="aguardando-recebimento-filtros">
+                    <label for="filtro-busca-aguardando">Buscar:</label>
+                    <input type="text" id="filtro-busca-aguardando"
+                        placeholder="Buscar por cliente, protocolo ou modelo...">
+                    <button type="button" id="btn-buscar-aguardando">Buscar</button>
+                    <button type="button" id="btn-atualizar-aguardando">Atualizar Lista</button>
+                </div>
 
                 <p id="aguardando-vazio" style="display:none;">Nenhum dispositivo aguardando recebimento no momento.</p>
                 <table id="tabela-aguardando" style="display:none;">
