@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
     <!-- Reaproveita o mesmo CSS/JS da navbar de inicio.html para manter a barra do topo idêntica -->
     <link rel="stylesheet" href="../css/inicio.css">
     <link rel="stylesheet" href="../css/servicos.css">
     <script src="../js/inicio.js"></script>
     <title>Serviços</title>
 </head>
+
 <body class="escuro">
 
     <!-- NAVBAR (igual à de inicio.html / contato.html) -->
     <nav class="navbar">
         <div class="nav-brand">
             <div class="nav-logo">
-               <img src="../ico/logo.png" class="logo">
+                <img src="../ico/logo.png" class="logo">
             </div>
             <div class="nav-title">
                 <span class="brand-name">Perícia Fiducia</span>
@@ -33,13 +37,24 @@
             <li><a href="inicio.html#solucoes" class="nav-link">Soluções</a></li>
             <li><a href="contato.html" class="nav-link">Contato</a></li>
             <li><a href="consulta-laudo.html" class="nav-link">Laudos</a></li>
+            <li class="nav-link-role" data-roles="cliente" style="display:none"><a href="usuario.html"
+                    class="nav-link">Meus Serviços</a></li>
+            <li class="nav-link-role" data-roles="perito" style="display:none"><a href="peritos.html"
+                    class="nav-link">Área do Perito</a></li>
+            <li class="nav-link-role" data-roles="logistica" style="display:none"><a href="entregas.html"
+                    class="nav-link">Entregas</a></li>
+            <li class="nav-link-role" data-roles="admin" style="display:none"><a href="admin.html"
+                    class="nav-link">Painel Admin</a></li>
         </ul>
 
         <div class="nav-actions">
-           <button class="btn-tema" data-tema-toggle title="Alternar tema" aria-label="Alternar tema">
-                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="btn-tema" data-tema-toggle title="Alternar tema" aria-label="Alternar tema">
+                <svg id="tema-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
-                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    <path
+                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+                    </path>
                 </svg>
             </button>
             <div id="area-usuario">
@@ -74,27 +89,27 @@
                 <div>
                     <label for="input-dispositivo">Dispositivo:</label><br>
                     <input type="text" id="input-dispositivo" name="dispositivo"
-                           placeholder="Ex: Notebook Dell, HD externo, Celular Samsung..." required>
+                        placeholder="Ex: Notebook Dell, HD externo, Celular Samsung..." required>
                 </div>
 
                 <div>
                     <label for="input-descricao-item">Descrição do item enviado para a perícia:</label><br>
                     <textarea id="input-descricao-item" name="descricao_item"
-                              placeholder="Descreva o item que será enviado (marca, modelo, número de série, acessórios, etc.)"
-                              required></textarea>
+                        placeholder="Descreva o item que será enviado (marca, modelo, número de série, acessórios, etc.)"
+                        required></textarea>
                 </div>
 
                 <div>
                     <label for="input-o-que-fazer">O que precisa ser feito no dispositivo:</label><br>
                     <textarea id="input-o-que-fazer" name="o_que_fazer"
-                              placeholder="Ex: Recuperação de dados, extração de mensagens, laudo de dano físico..."
-                              required></textarea>
+                        placeholder="Ex: Recuperação de dados, extração de mensagens, laudo de dano físico..."
+                        required></textarea>
                 </div>
 
                 <div>
                     <label for="input-prazo">Prazo desejado para conclusão da perícia:</label><br>
                     <input type="text" id="input-prazo" name="prazo"
-                           placeholder="Ex: 5 dias úteis, 15/08/2026, urgente..." required>
+                        placeholder="Ex: 5 dias úteis, 15/08/2026, urgente..." required>
                 </div>
 
                 <div>
@@ -123,7 +138,8 @@
         <div>
             <button type="button" id="btn-fechar-laudo">Fechar</button>
             <h2>Serviço Concluído</h2>
-            <p>O seu pedido foi concluído! Confira abaixo o laudo técnico com o que foi necessário fazer para concluir o serviço:</p>
+            <p>O seu pedido foi concluído! Confira abaixo o laudo técnico com o que foi necessário fazer para concluir o
+                serviço:</p>
             <div id="conteudo-laudo"></div>
         </div>
     </div>
@@ -147,4 +163,5 @@
     <script src="../js/servicos.js"></script>
     <script src="../js/tema.js"></script>
 </body>
+
 </html>
